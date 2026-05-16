@@ -238,14 +238,10 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: _loading ? null : _sendReservation,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_loading)
-                      const SizedBox(
+                icon: _loading
+                    ? const SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
@@ -253,11 +249,11 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    else
-                      const Icon(Icons.send, size: 18),
-                    const SizedBox(width: 8),
-                    Text(l10n.reservationSendWhatsapp),
-                  ],
+                    : const Icon(Icons.send, size: 18),
+                label: Text(
+                  l10n.reservationSendWhatsapp,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ),

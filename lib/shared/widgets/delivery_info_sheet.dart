@@ -7,11 +7,15 @@ import '../../core/theme/app_colors.dart';
 void showDeliveryInfoSheet(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
+    isScrollControlled: true,
     backgroundColor: AppColors.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
-    builder: (ctx) => DeliveryInfoSheet(parentContext: context),
+    builder: (ctx) => Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(ctx).bottom),
+      child: DeliveryInfoSheet(parentContext: context),
+    ),
   );
 }
 
@@ -24,7 +28,7 @@ class DeliveryInfoSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = parentContext.l10n;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
         mainAxisSize: MainAxisSize.min,

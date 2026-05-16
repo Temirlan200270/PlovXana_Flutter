@@ -35,7 +35,7 @@ dependencies:
   marionette_flutter: ^0.3.0
 
   cupertino_icons: ^1.0.8
-  sentry_flutter: ^8.0.0
+  sentry_flutter: ^9.10.0
   connectivity_plus: ^6.0.0
   shimmer: ^3.0.0
   firebase_core: ^3.13.0
