@@ -34,7 +34,7 @@ class CategoryScreen extends ConsumerWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 0.72,
+                  childAspectRatio: 0.65,
                 ),
                 itemCount: items.length,
                 itemBuilder: (_, i) => MenuItemCard(item: items[i]),

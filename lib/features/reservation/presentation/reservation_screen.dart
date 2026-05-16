@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import '../../../core/config/app_config.dart';
+import '../../../core/config/user_prefs.dart';
 import '../../../core/theme/app_colors.dart';
 
-class ReservationScreen extends StatefulWidget {
+class ReservationScreen extends ConsumerStatefulWidget {
   const ReservationScreen({super.key});
 
   @override
-  State<ReservationScreen> createState() => _ReservationScreenState();
+  ConsumerState<ReservationScreen> createState() => _ReservationScreenState();
 }
 
-class _ReservationScreenState extends State<ReservationScreen> {
+class _ReservationScreenState extends ConsumerState<ReservationScreen> {
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 13, minute: 0);
   int _guests = 2;
@@ -19,6 +22,16 @@ class _ReservationScreenState extends State<ReservationScreen> {
   final _phoneCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = ref.read(userPrefsProvider);
+      _nameCtrl.text = prefs.name;
+      _phoneCtrl.text = prefs.phone;
+    });
+  }
 
   @override
   void dispose() {
@@ -96,10 +109,15 @@ class _ReservationScreenState extends State<ReservationScreen> {
         'phone': '+7$phone',
         'name': name,
       });
-    } catch (_) {}
+      // Сохраняем данные локально после успешной брони
+      await ref.read(userPrefsProvider.notifier).save(name, phone);
+    } catch (_) {
+      // Даже если в базу не записалось, сохраняем локально для удобства
+      await ref.read(userPrefsProvider.notifier).save(name, phone);
+    }
 
     final uri = Uri.parse(
-      'https://wa.me/77074007728?text=${Uri.encodeComponent(message)}',
+      '${AppConfig.whatsappUrl}?text=${Uri.encodeComponent(message)}',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);

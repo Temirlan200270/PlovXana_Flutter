@@ -138,15 +138,26 @@ def _sync_categories(
     if not groups_map:
         return {}
 
-    rows = [
-        {"iiko_id": str(iiko_id), "name": name, "sort_order": i}
-        for i, (iiko_id, name) in enumerate(groups_map.items())
-    ]
+    existing_result = supabase.table("categories").select("iiko_id").execute()
+    existing_ids = {row["iiko_id"] for row in existing_result.data if row.get("iiko_id")}
 
-    supabase.table("categories").upsert(rows, on_conflict="iiko_id").execute()
-    logger.info("categories: upserted %d rows", len(rows))
+    new_rows: list[dict] = []
+    update_rows: list[dict] = []
+    for i, (iiko_id, name) in enumerate(groups_map.items()):
+        sid = str(iiko_id)
+        if sid in existing_ids:
+            update_rows.append({"iiko_id": sid, "name": name})
+        else:
+            new_rows.append({"iiko_id": sid, "name": name, "sort_order": i})
 
-    # Fetch back to get supabase UUIDs
+    if new_rows:
+        supabase.table("categories").insert(new_rows).execute()
+        logger.info("categories: inserted %d new rows", len(new_rows))
+    for row in update_rows:
+        supabase.table("categories").update({"name": row["name"]}).eq("iiko_id", row["iiko_id"]).execute()
+    if update_rows:
+        logger.info("categories: updated name for %d existing rows (sort_order preserved)", len(update_rows))
+
     result = supabase.table("categories").select("id, iiko_id").execute()
     return {row["iiko_id"]: row["id"] for row in result.data if row.get("iiko_id")}
 

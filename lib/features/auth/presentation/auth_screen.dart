@@ -83,7 +83,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Вход')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

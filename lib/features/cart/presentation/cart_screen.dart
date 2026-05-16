@@ -70,12 +70,17 @@ class CartScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(ci.item.name,
-                                style: const TextStyle(
-                                    color: AppColors.cream, fontWeight: FontWeight.w600)),
+                            Text(
+                              ci.item.name,
+                              style: const TextStyle(
+                                  color: AppColors.cream, fontWeight: FontWeight.w600),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                             Text(
                               '${_fmt(ci.item.price)} тг',
                               style: const TextStyle(color: AppColors.greyLight, fontSize: 13),
+                              maxLines: 1,
                             ),
                           ],
                         ),

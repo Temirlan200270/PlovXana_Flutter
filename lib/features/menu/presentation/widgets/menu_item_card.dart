@@ -57,50 +57,57 @@ class MenuItemCard extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     item.name,
                     style: const TextStyle(
                       color: AppColors.cream,
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (item.weightG != null)
-                    Text(
-                      '${item.weightG} г',
-                      style: const TextStyle(color: AppColors.greyLight, fontSize: 11),
-                    ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 2),
+                  Text(
+                    item.weightG != null ? '${item.weightG} г' : '',
+                    style: const TextStyle(color: AppColors.greyLight, fontSize: 10),
+                    maxLines: 1,
+                  ),
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        '${_formatPrice(item.price)} тг',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          '${_formatPrice(item.price)} тг',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 4),
                       GestureDetector(
                         onTap: () => ref.read(cartProvider.notifier).add(item),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          width: 32,
-                          height: 32,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             color: inCart ? AppColors.primary : AppColors.surfaceVariant,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             inCart ? Icons.check : Icons.add,
-                            size: 18,
+                            size: 16,
                             color: Colors.white,
                           ),
                         ),

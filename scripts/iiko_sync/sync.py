@@ -26,7 +26,11 @@ from menu_sync import sync_menu_from_iiko, sync_stop_lists
 from iiko_client import IikoClient
 import asyncio
 
-load_dotenv(".env.iiko")
+from pathlib import Path
+
+# Загружаем .env из корня проекта (scripts/iiko_sync/../../.env)
+_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(_ROOT / ".env")
 
 logging.basicConfig(
     level=logging.INFO,

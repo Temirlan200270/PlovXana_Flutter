@@ -9,6 +9,22 @@ class CategoryChip extends StatelessWidget {
 
   const CategoryChip({super.key, required this.category, required this.onTap});
 
+  static IconData _iconForCategory(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('плов'))    return Icons.rice_bowl;
+    if (n.contains('шашлык')) return Icons.outdoor_grill;
+    if (n.contains('манты'))  return Icons.dinner_dining;
+    if (n.contains('самса'))  return Icons.bakery_dining;
+    if (n.contains('суп'))    return Icons.soup_kitchen;
+    if (n.contains('лагман')) return Icons.ramen_dining;
+    if (n.contains('салат'))  return Icons.eco;
+    if (n.contains('закуск')) return Icons.tapas;
+    if (n.contains('напит'))  return Icons.local_cafe;
+    if (n.contains('десерт')) return Icons.cake;
+    if (n.contains('мясо') || n.contains('птиц')) return Icons.set_meal;
+    return Icons.restaurant_menu;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -32,13 +48,13 @@ class CategoryChip extends StatelessWidget {
                       child: CachedNetworkImage(
                         imageUrl: category.imageUrl!,
                         fit: BoxFit.cover,
-                        errorWidget: (_, _, _) => const Icon(
-                          Icons.restaurant,
+                        errorWidget: (_, _, _) => Icon(
+                          _iconForCategory(category.name),
                           color: AppColors.primary,
                         ),
                       ),
                     )
-                  : const Icon(Icons.restaurant, color: AppColors.primary),
+                  : Icon(_iconForCategory(category.name), color: AppColors.primary),
             ),
             const SizedBox(height: 6),
             Text(

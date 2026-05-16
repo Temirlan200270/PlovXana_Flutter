@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import '../../../core/config/app_config.dart';
+import '../../../core/config/user_prefs.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../cart/data/cart_provider.dart';
 
@@ -28,10 +30,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   @override
   void initState() {
     super.initState();
-    final user = Supabase.instance.client.auth.currentUser;
-    if (user?.phone != null) {
-      _phoneCtrl.text = user!.phone!.replaceFirst('+7', '');
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = ref.read(userPrefsProvider);
+      _nameCtrl.text = prefs.name;
+      if (prefs.phone.isNotEmpty) {
+        _phoneCtrl.text = prefs.phone;
+      } else {
+        final user = Supabase.instance.client.auth.currentUser;
+        if (user?.phone != null) {
+          _phoneCtrl.text = user!.phone!.replaceFirst('+7', '');
+        }
+      }
+    });
   }
 
   @override
@@ -115,12 +125,15 @@ $lines
         'phone': '+7$phone',
         'comment': _commentCtrl.text.trim(),
       });
+      // Сохраняем данные локально после успешного (или попытки) заказа
+      await ref.read(userPrefsProvider.notifier).save(name, phone);
     } catch (_) {
       // Заказ всё равно уходит в WhatsApp
+      await ref.read(userPrefsProvider.notifier).save(name, phone);
     }
 
     final uri = Uri.parse(
-      'https://wa.me/77074007728?text=${Uri.encodeComponent(message)}',
+      '${AppConfig.whatsappUrl}?text=${Uri.encodeComponent(message)}',
     );
 
     if (await canLaunchUrl(uri)) {

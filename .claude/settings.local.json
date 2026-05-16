@@ -11,7 +11,20 @@
       "mcp__supabase__get_cost",
       "mcp__supabase__confirm_cost",
       "mcp__supabase__create_project",
-      "mcp__supabase__apply_migration"
+      "mcp__supabase__apply_migration",
+      "mcp__dart-flutter__list_devices",
+      "mcp__dart-flutter__list_running_apps",
+      "mcp__dart-flutter__launch_app",
+      "mcp__dart-flutter__connect_dart_tooling_daemon",
+      "mcp__dart-flutter__get_app_logs",
+      "mcp__dart-flutter__get_widget_tree",
+      "mcp__dart-flutter__flutter_driver",
+      "mcp__dart-flutter__get_runtime_errors",
+      "mcp__marionette__connect",
+      "mcp__marionette__take_screenshots",
+      "mcp__marionette__hot_reload",
+      "mcp__dart-flutter__hot_restart",
+      "mcp__supabase__execute_sql"
     ]
   }
 }

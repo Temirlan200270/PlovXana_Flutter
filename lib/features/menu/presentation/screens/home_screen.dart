@@ -1,20 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/menu_providers.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/menu_item_card.dart';
+import '../widgets/menu_shimmer.dart';
 import '../widgets/promo_banner.dart';
+import '../widgets/shop_status_badge.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final _searchCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final popularAsync = ref.watch(popularItemsProvider);
+    final newItemsAsync = ref.watch(newItemsProvider);
     final promotionsAsync = ref.watch(promotionsProvider);
+    final searchQuery = ref.watch(searchQueryProvider);
+    final searchResultsAsync = ref.watch(searchResultsProvider);
+
+    final isLoading = categoriesAsync.isLoading || popularAsync.isLoading;
+
+    if (isLoading && searchQuery.isEmpty) {
+      return const Scaffold(body: SafeArea(child: MenuShimmer()));
+    }
 
     return Scaffold(
       body: CustomScrollView(
@@ -22,24 +47,28 @@ class HomeScreen extends ConsumerWidget {
           SliverAppBar(
             floating: true,
             snap: true,
-            expandedHeight: 60,
-            title: Column(
+            expandedHeight: 70,
+            title: Row(
               children: [
-                Text(
-                  'ПЛОВ НОМЕР 1',
-                  style: Theme.of(context).appBarTheme.titleTextStyle,
-                ),
-                const Text(
-                  'Узбекская кухня · Павлодар',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.greyLight,
-                    fontWeight: FontWeight.normal,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ПЛОВ НОМЕР 1',
+                        style: Theme.of(context).appBarTheme.titleTextStyle,
+                      ),
+                      const ShopStatusBadge(),
+                    ],
                   ),
                 ),
               ],
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.logout, color: AppColors.error, size: 20),
+                onPressed: () => _showLogoutConfirm(context),
+              ),
               IconButton(
                 icon: const Icon(Icons.info_outline, color: AppColors.cream),
                 onPressed: () => _showInfo(context),
@@ -47,59 +76,132 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           SliverToBoxAdapter(
-            child: promotionsAsync.when(
-              data: (promos) => promos.isEmpty
-                  ? const SizedBox.shrink()
-                  : PromoBanner(promotions: promos),
-              loading: () => const SizedBox(height: 160),
-              error: (_, _) => const SizedBox.shrink(),
-            ),
-          ),
-          SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-              child: Text(
-                'Категории',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: categoriesAsync.when(
-              data: (cats) => SizedBox(
-                height: 100,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: cats.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) => CategoryChip(
-                    category: cats[i],
-                    onTap: () => context.push(
-                      '/category/${cats[i].id}',
-                      extra: cats[i],
-                    ),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+              child: TextField(
+                controller: _searchCtrl,
+                onChanged: (v) => ref.read(searchQueryProvider.notifier).state = v,
+                style: const TextStyle(color: AppColors.cream),
+                decoration: InputDecoration(
+                  hintText: 'Поиск блюд...',
+                  prefixIcon: const Icon(Icons.search, color: AppColors.grey),
+                  suffixIcon: searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.close, color: AppColors.grey),
+                          onPressed: () {
+                            _searchCtrl.clear();
+                            ref.read(searchQueryProvider.notifier).state = '';
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text('Ошибка загрузки', style: TextStyle(color: AppColors.error)),
-              ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-              child: Text(
-                'Популярное',
-                style: Theme.of(context).textTheme.titleLarge,
+          if (searchQuery.isNotEmpty)
+            _buildSearchResults(searchResultsAsync)
+          else ...[
+            SliverToBoxAdapter(
+              child: promotionsAsync.when(
+                data: (promos) => promos.isEmpty
+                    ? const SizedBox.shrink()
+                    : PromoBanner(promotions: promos),
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
             ),
-          ),
-          popularAsync.when(
-            data: (items) => SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+            _buildSectionTitle('Категории'),
+            SliverToBoxAdapter(
+              child: categoriesAsync.when(
+                data: (cats) => SizedBox(
+                  height: 120, // Увеличено со 100
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: cats.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (_, i) => CategoryChip(
+                      category: cats[i],
+                      onTap: () => context.push(
+                        '/category/${cats[i].id}',
+                        extra: cats[i],
+                      ),
+                    ),
+                  ),
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
+              ),
+            ),
+            _buildSectionTitle('Популярное'),
+            _buildTwoRowHorizontalMenu(popularAsync),
+            _buildSectionTitle('Новинки'),
+            _buildTwoRowHorizontalMenu(newItemsAsync),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTwoRowHorizontalMenu(AsyncValue<List<dynamic>> asyncData) {
+    return SliverToBoxAdapter(
+      child: asyncData.when(
+        data: (items) => items.isEmpty
+            ? const SizedBox.shrink()
+            : SizedBox(
+                height: 480, // Увеличено с 440
+                child: GridView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.25, // Скорректировано
+                  ),
+                  itemCount: items.length,
+                  itemBuilder: (_, i) => MenuItemCard(item: items[i]),
+                ),
+              ),
+        loading: () => const SizedBox.shrink(),
+        error: (_, _) => const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget _buildSearchResults(AsyncValue<List<dynamic>> results) {
+    return results.when(
+      data: (items) => items.isEmpty
+          ? const SliverToBoxAdapter(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 40),
+                  child: Text('Ничего не найдено',
+                      style: TextStyle(color: AppColors.grey)),
+                ),
+              ),
+            )
+          : SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverGrid(
                 delegate: SliverChildBuilderDelegate(
                   (_, i) => MenuItemCard(item: items[i]),
@@ -109,14 +211,44 @@ class HomeScreen extends ConsumerWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 0.72,
+                  childAspectRatio: 0.65,
                 ),
               ),
             ),
-            loading: () => const SliverToBoxAdapter(
-              child: Center(child: CircularProgressIndicator()),
-            ),
-            error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      loading: () => const SliverToBoxAdapter(
+          child: Center(child: CircularProgressIndicator())),
+      error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+    );
+  }
+
+  void _showLogoutConfirm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Выйти?', style: TextStyle(color: AppColors.cream)),
+        content: const Text(
+          'Вы уверены, что хотите выйти из аккаунта?',
+          style: TextStyle(color: AppColors.greyLight),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final nav = Navigator.of(ctx);
+              final sm = ScaffoldMessenger.of(context);
+              await Supabase.instance.client.auth.signOut();
+              if (mounted) {
+                nav.pop();
+                sm.showSnackBar(
+                  const SnackBar(content: Text('Вы вышли из системы')),
+                );
+              }
+            },
+            child: const Text('Выйти', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
