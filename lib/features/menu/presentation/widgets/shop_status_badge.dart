@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../../core/config/delivery_rules.dart';
+import '../../../../core/l10n/delivery_l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class ShopStatusBadge extends StatelessWidget {
@@ -6,21 +8,21 @@ class ShopStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final isOpen = now.hour >= 11 && now.hour < 24;
-    final isClosingSoon = now.hour == 23 && now.minute >= 30;
+    final l10n = context.l10n;
+    final open = isShopOpen();
+    final closingSoon = isClosingSoon();
 
-    final dotColor = isClosingSoon
+    final dotColor = closingSoon
         ? AppColors.primary
-        : (isOpen ? AppColors.halal : AppColors.error);
+        : (open ? AppColors.halal : AppColors.error);
 
-    final textColor = isClosingSoon
+    final textColor = closingSoon
         ? AppColors.primary
-        : (isOpen ? AppColors.greyLight : AppColors.error);
+        : (open ? AppColors.greyLight : AppColors.error);
 
-    final text = isClosingSoon
-        ? 'Закроется скоро'
-        : (isOpen ? 'Сейчас открыто' : 'Закрыто до 11:00');
+    final text = closingSoon
+        ? l10n.shopStatusClosingSoon()
+        : (open ? l10n.shopStatusOpen() : l10n.shopStatusClosed());
 
     return Row(
       mainAxisSize: MainAxisSize.min,

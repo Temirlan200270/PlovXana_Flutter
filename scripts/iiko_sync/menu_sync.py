@@ -249,6 +249,26 @@ async def _async_sync_menu(
         chunk = rows_to_upsert[i:i + CHUNK]
         supabase.table("menu_items").upsert(chunk, on_conflict="iiko_id").execute()
 
+    # Fetch db_id mapping for modifier sync
+    upserted_iiko_ids = [r["iiko_id"] for r in rows_to_upsert]
+    if upserted_iiko_ids:
+        id_res = supabase.table("menu_items").select("id, iiko_id").in_(
+            "iiko_id", upserted_iiko_ids
+        ).execute()
+        item_id_map: dict[str, str] = {row["iiko_id"]: row["id"] for row in id_res.data}
+        # Build product lookup by iiko_id for modifier sync
+        product_by_iiko: dict[str, dict] = {
+            str(p.get("id") or "").strip(): p for p in products
+            if str(p.get("id") or "").strip() in item_id_map
+        }
+        mod_synced = 0
+        for iiko_id, db_id in item_id_map.items():
+            product = product_by_iiko.get(iiko_id)
+            if product and product.get("modifierGroups"):
+                _sync_modifiers(supabase, db_id, product)
+                mod_synced += 1
+        logger.info("Modifiers synced for %d items", mod_synced)
+
     total = len(rows_to_upsert)
     logger.info(
         "Menu sync done: upserted=%d skip(no_id=%d deleted=%d type=%d no_name=%d no_cat=%d) raw=%d unique=%d",
@@ -266,6 +286,38 @@ async def _async_sync_menu(
         "api_products_unique": len(products),
         "categories_synced": len(groups_map),
     }
+
+
+def _sync_modifiers(supabase: Client, item_db_id: str, product: dict[str, Any]) -> None:
+    for g in (product.get("modifierGroups") or []):
+        g_iiko = str(g.get("id") or "").strip()
+        g_name = (g.get("name") or "").strip()
+        if not g_iiko or not g_name:
+            continue
+        supabase.table("modifier_groups").upsert({
+            "iiko_id": g_iiko,
+            "menu_item_id": item_db_id,
+            "name": g_name,
+            "required": bool(g.get("required")),
+            "min_amount": int(g.get("minAmount") or 0),
+            "max_amount": int(g.get("maxAmount") or 1),
+        }, on_conflict="iiko_id").execute()
+
+        grp_res = supabase.table("modifier_groups").select("id").eq("iiko_id", g_iiko).single().execute()
+        grp_db_id = grp_res.data["id"]
+
+        for m in (g.get("items") or []):
+            m_iiko = str(m.get("id") or "").strip()
+            m_name = (m.get("name") or "").strip()
+            m_price = int(float(m.get("price") or 0))
+            if not m_iiko or not m_name:
+                continue
+            supabase.table("modifiers").upsert({
+                "iiko_id": m_iiko,
+                "group_id": grp_db_id,
+                "name": m_name,
+                "price": m_price,
+            }, on_conflict="iiko_id").execute()
 
 
 # ---------------------------------------------------------------------------

@@ -11,35 +11,38 @@ class UserPrefsNotifier extends StateNotifier<UserPrefsState> {
   UserPrefsNotifier(this._prefs) : super(UserPrefsState(
     name: _prefs.getString('user_name') ?? '',
     phone: _prefs.getString('user_phone') ?? '',
+    lastAddress: _prefs.getString('user_last_address') ?? '',
   ));
-
-  Future<void> updateName(String name) async {
-    await _prefs.setString('user_name', name);
-    state = state.copyWith(name: name);
-  }
-
-  Future<void> updatePhone(String phone) async {
-    await _prefs.setString('user_phone', phone);
-    state = state.copyWith(phone: phone);
-  }
 
   Future<void> save(String name, String phone) async {
     await _prefs.setString('user_name', name);
     await _prefs.setString('user_phone', phone);
-    state = UserPrefsState(name: name, phone: phone);
+    state = state.copyWith(name: name, phone: phone);
+  }
+
+  Future<void> saveAddress(String address) async {
+    if (address.isEmpty) return;
+    await _prefs.setString('user_last_address', address);
+    state = state.copyWith(lastAddress: address);
   }
 }
 
 class UserPrefsState {
   final String name;
   final String phone;
+  final String lastAddress;
 
-  UserPrefsState({required this.name, required this.phone});
+  UserPrefsState({
+    required this.name,
+    required this.phone,
+    this.lastAddress = '',
+  });
 
-  UserPrefsState copyWith({String? name, String? phone}) {
+  UserPrefsState copyWith({String? name, String? phone, String? lastAddress}) {
     return UserPrefsState(
       name: name ?? this.name,
       phone: phone ?? this.phone,
+      lastAddress: lastAddress ?? this.lastAddress,
     );
   }
 }

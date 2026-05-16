@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # Backend
   supabase_flutter: ^2.9.0
@@ -33,7 +35,11 @@ dependencies:
   marionette_flutter: ^0.3.0
 
   cupertino_icons: ^1.0.8
+  sentry_flutter: ^8.0.0
+  connectivity_plus: ^6.0.0
   shimmer: ^3.0.0
+  firebase_core: ^3.13.0
+  firebase_messaging: ^15.2.5
 
 dev_dependencies:
   flutter_test:
@@ -43,6 +49,7 @@ dev_dependencies:
   patrol: any
 
 flutter:
+  generate: true
   uses-material-design: true
 
   assets:

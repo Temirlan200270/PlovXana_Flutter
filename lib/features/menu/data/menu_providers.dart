@@ -1,30 +1,53 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../notifications/data/fcm_service.dart';
+import '../../../core/config/user_prefs.dart';
 import '../../../shared/models/category.dart';
 import '../../../shared/models/menu_item.dart';
+import '../../../shared/models/modifier_group.dart';
 import '../../../shared/models/promotion.dart';
 
 final supabaseProvider = Provider<SupabaseClient>((_) => Supabase.instance.client);
-final signOutProvider = Provider((_) => () => Supabase.instance.client.auth.signOut());
+final signOutProvider = Provider((ref) => () async {
+      await ref.read(fcmServiceProvider).unregisterCurrentUser();
+      await Supabase.instance.client.auth.signOut();
+    });
 
 final categoriesProvider = FutureProvider<List<Category>>((ref) async {
+  const cacheKey = 'cache_categories';
+  final prefs = ref.read(sharedPreferencesProvider);
   final client = ref.read(supabaseProvider);
-  final catsRaw = await client
-      .from('categories')
-      .select()
-      .order('sort_order')
-      .order('name');
-  final itemsRaw = await client
-      .from('menu_items')
-      .select('category_id')
-      .eq('is_available', true);
-  final activeCatIds = {
-    for (final row in itemsRaw as List) row['category_id'] as String
-  };
-  return (catsRaw as List)
-      .map((e) => Category.fromJson(e))
-      .where((c) => activeCatIds.contains(c.id))
-      .toList();
+
+  try {
+    final catsRaw = await client
+        .from('categories')
+        .select()
+        .order('sort_order')
+        .order('name');
+    final itemsRaw = await client
+        .from('menu_items')
+        .select('category_id')
+        .eq('is_available', true);
+    final activeCatIds = {
+      for (final row in itemsRaw as List) row['category_id'] as String
+    };
+    final result = (catsRaw as List)
+        .map((e) => Category.fromJson(e))
+        .where((c) => activeCatIds.contains(c.id))
+        .toList();
+    prefs.setString(cacheKey, jsonEncode(result.map((c) => c.toJson()).toList()));
+    return result;
+  } catch (_) {
+    final cached = prefs.getString(cacheKey);
+    if (cached != null) {
+      return (jsonDecode(cached) as List)
+          .map((e) => Category.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    rethrow;
+  }
 });
 
 final menuItemsByCategoryProvider =
@@ -83,17 +106,57 @@ final newItemsProvider = FutureProvider<List<MenuItem>>((ref) async {
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
-final searchResultsProvider = FutureProvider<List<MenuItem>>((ref) async {
-  final query = ref.watch(searchQueryProvider);
-  if (query.isEmpty) return [];
+class SearchNotifier extends AutoDisposeAsyncNotifier<List<MenuItem>> {
+  Timer? _timer;
 
-  final client = ref.read(supabaseProvider);
-  final data = await client
+  @override
+  Future<List<MenuItem>> build() async => [];
+
+  void search(String query) {
+    _timer?.cancel();
+    if (query.trim().isEmpty) {
+      state = const AsyncData([]);
+      return;
+    }
+    _timer = Timer(const Duration(milliseconds: 300), () async {
+      state = const AsyncLoading();
+      state = await AsyncValue.guard(() async {
+        final client = ref.read(supabaseProvider);
+        final data = await client
+            .from('menu_items')
+            .select()
+            .ilike('name', '%${query.trim()}%')
+            .eq('is_available', true)
+            .limit(20);
+        return (data as List).map((e) => MenuItem.fromJson(e)).toList();
+      });
+    });
+  }
+}
+
+final searchProvider =
+    AsyncNotifierProvider.autoDispose<SearchNotifier, List<MenuItem>>(
+  SearchNotifier.new,
+);
+
+final menuItemByIdProvider =
+    FutureProvider.family<MenuItem?, String>((ref, id) async {
+  final data = await ref
+      .read(supabaseProvider)
       .from('menu_items')
       .select()
-      .ilike('name', '%$query%')
-      .eq('is_available', true)
-      .limit(20);
-  
-  return (data as List).map((e) => MenuItem.fromJson(e)).toList();
+      .eq('id', id)
+      .single();
+  return MenuItem.fromJson(data);
+});
+
+final modifierGroupsProvider =
+    FutureProvider.family<List<ModifierGroup>, String>((ref, menuItemId) async {
+  final data = await ref
+      .read(supabaseProvider)
+      .from('modifier_groups')
+      .select('*, modifiers(*)')
+      .eq('menu_item_id', menuItemId)
+      .order('sort_order');
+  return (data as List).map((e) => ModifierGroup.fromJson(e)).toList();
 });

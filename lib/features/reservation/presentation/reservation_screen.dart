@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/l10n/locale_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/config/user_prefs.dart';
+import '../../../core/l10n/delivery_l10n.dart';
 import '../../../core/theme/app_colors.dart';
 
 class ReservationScreen extends ConsumerStatefulWidget {
@@ -22,6 +24,9 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
   final _phoneCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
   bool _loading = false;
+
+  String _formatTime(TimeOfDay t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
   @override
   void initState() {
@@ -74,10 +79,11 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
   Future<void> _sendReservation() async {
     final name = _nameCtrl.text.trim();
     final phone = _phoneCtrl.text.trim();
+    final l10n = context.l10n;
     if (name.isEmpty || phone.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Укажите имя и телефон'),
+        SnackBar(
+          content: Text(l10n.errorReservationContacts),
           backgroundColor: AppColors.error,
         ),
       );
@@ -87,7 +93,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
     setState(() => _loading = true);
 
     final dateStr = DateFormat('dd.MM.yyyy').format(_selectedDate);
-    final timeStr = _selectedTime.format(context);
+    final timeStr = _formatTime(_selectedTime);
 
     final message =
         '🍽 Бронирование стола — ПЛОВ НОМЕР 1\n\n'
@@ -126,8 +132,8 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
     if (mounted) {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Запрос на бронирование отправлен!'),
+        SnackBar(
+          content: Text(context.l10n.reservationSuccess),
           backgroundColor: AppColors.halal,
         ),
       );
@@ -136,17 +142,19 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = DateFormat('d MMMM, EEEE', 'ru').format(_selectedDate);
-    final timeStr = _selectedTime.format(context);
+    final l10n = context.l10n;
+    final localeCode = ref.watch(localeProvider).languageCode;
+    final dateStr = DateFormat('d MMMM, EEEE', localeCode).format(_selectedDate);
+    final timeStr = _formatTime(_selectedTime);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Бронирование стола')),
+      appBar: AppBar(title: Text(l10n.reservationTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Выберите дату и время',
+            Text(l10n.reservationChooseDateTime,
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             Row(
@@ -167,7 +175,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            Text('Количество гостей',
+            Text(l10n.reservationGuestsLabel,
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             Row(
@@ -195,14 +203,14 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            Text('Контактные данные',
+            Text(l10n.checkoutContacts,
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             TextField(
               controller: _nameCtrl,
               style: const TextStyle(color: AppColors.cream),
               decoration: InputDecoration(
-                hintText: 'Ваше имя',
+                hintText: l10n.checkoutNameHint,
                 prefixIcon: _fieldPrefixIcon(Icons.person_outline),
               ),
             ),
@@ -212,7 +220,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
               keyboardType: TextInputType.phone,
               style: const TextStyle(color: AppColors.cream),
               decoration: InputDecoration(
-                hintText: '777 000 00 00',
+                hintText: l10n.checkoutPhoneHint,
                 prefixText: '+7 ',
                 prefixStyle: const TextStyle(color: AppColors.cream),
                 prefixIcon: _fieldPrefixIcon(Icons.phone_outlined),
@@ -223,8 +231,8 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
               controller: _commentCtrl,
               style: const TextStyle(color: AppColors.cream),
               maxLines: 2,
-              decoration: const InputDecoration(
-                hintText: 'Пожелания (отдельный зал, детское место...)',
+              decoration: InputDecoration(
+                hintText: l10n.reservationCommentHint,
               ),
             ),
             const SizedBox(height: 32),
@@ -248,16 +256,16 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
                     else
                       const Icon(Icons.send, size: 18),
                     const SizedBox(width: 8),
-                    const Text('Отправить бронь в WhatsApp'),
+                    Text(l10n.reservationSendWhatsapp),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 8),
-            const Center(
+            Center(
               child: Text(
-                'Подтверждение придёт по телефону',
-                style: TextStyle(color: AppColors.greyLight, fontSize: 12),
+                l10n.reservationPhoneConfirm,
+                style: const TextStyle(color: AppColors.greyLight, fontSize: 12),
               ),
             ),
             const SizedBox(height: 32),

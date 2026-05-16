@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/config/delivery_rules.dart';
+import '../../core/l10n/delivery_l10n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../features/cart/data/cart_provider.dart';
 
@@ -9,6 +11,7 @@ class FloatingCartBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final count = ref.watch(cartCountProvider);
     final total = ref.watch(cartTotalProvider);
 
@@ -52,7 +55,7 @@ class FloatingCartBar extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Корзина · ${_dishLabel(count)}',
+                        l10n.cartBarLabel(l10n.cartDishCount(count)),
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: AppColors.background,
                               fontWeight: FontWeight.w600,
@@ -63,7 +66,7 @@ class FloatingCartBar extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${_formatPrice(total)} тг',
+                      l10n.currencyTenge(formatTenge(total)),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: AppColors.background,
                             fontWeight: FontWeight.bold,
@@ -80,21 +83,5 @@ class FloatingCartBar extends ConsumerWidget {
               ),
             ),
     );
-  }
-
-  static String _dishLabel(int count) {
-    final mod10 = count % 10;
-    final mod100 = count % 100;
-    if (mod100 >= 11 && mod100 <= 14) return '$count блюд';
-    if (mod10 == 1) return '$count блюдо';
-    if (mod10 >= 2 && mod10 <= 4) return '$count блюда';
-    return '$count блюд';
-  }
-
-  static String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]} ',
-        );
   }
 }

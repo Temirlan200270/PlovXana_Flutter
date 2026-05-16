@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/config/delivery_rules.dart';
 import '../../../core/config/user_prefs.dart';
+import '../../../core/l10n/delivery_l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../cart/data/cart_provider.dart';
 
@@ -34,6 +35,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final prefs = ref.read(userPrefsProvider);
       _nameCtrl.text = prefs.name;
+      if (prefs.lastAddress.isNotEmpty) _addressCtrl.text = prefs.lastAddress;
       if (prefs.phone.isNotEmpty) {
         _phoneCtrl.text = prefs.phone;
       } else {
@@ -60,12 +62,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final phone = _phoneCtrl.text.trim();
     final name = _nameCtrl.text.trim();
 
+    final l10n = context.l10n;
     if (phone.isEmpty) {
-      _showError('Укажите номер телефона');
+      _showError(l10n.errorPhoneRequired);
       return;
     }
     if (delivery == DeliveryType.delivery && address.isEmpty) {
-      _showError('Укажите адрес доставки');
+      _showError(l10n.errorAddressRequired);
       return;
     }
 
@@ -85,13 +88,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final now = DateFormat('HH:mm').format(DateTime.now());
 
     final lines = cart.map((ci) {
-      final price = ci.item.price * ci.quantity;
-      return '- ${ci.item.name} x${ci.quantity} — ${formatTenge(price)} тг';
+      final modsStr = ci.modifiers.isEmpty
+          ? ''
+          : ' (${ci.modifiers.map((m) => m.name).join(', ')})';
+      final price = ci.total;
+      return '- ${ci.item.name}$modsStr x${ci.quantity} — ${formatTenge(price)} тг';
     }).join('\n');
 
     final deliveryLabel = isDelivery ? 'Доставка' : 'Самовывоз';
     final deliveryFeeLine = isDelivery
-        ? '\n🚚 Доставка: ${deliveryFeeShortLabel(subtotal, isDelivery: true)}'
+        ? '\n🚚 Доставка: ${context.l10n.deliveryFeeShortLabel(subtotal, isDelivery: true)}'
         : '';
     final addressLine = isDelivery && address.isNotEmpty
         ? '\n📍 Адрес: $address'
@@ -100,7 +106,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ? '\n💬 Комментарий: ${_commentCtrl.text.trim()}'
         : '';
 
-    final message = '''🍽 Новый заказ — ПЛОВ НОМЕР 1
+    final message =
+        '''🍽 Новый заказ — ПЛОВ НОМЕР 1
 
 📋 Состав:
 $lines
@@ -119,12 +126,14 @@ $lines
         'user_id': user.id,
         'status': 'pending',
         'items_json': cart
-            .map((ci) => {
-                  'item_id': ci.item.id,
-                  'name': ci.item.name,
-                  'price': ci.item.price,
-                  'quantity': ci.quantity,
-                })
+            .map(
+              (ci) => {
+                'item_id': ci.item.id,
+                'name': ci.item.name,
+                'price': ci.item.price,
+                'quantity': ci.quantity,
+              },
+            )
             .toList(),
         'total': grandTotal,
         'delivery_type': delivery.name,
@@ -134,9 +143,10 @@ $lines
       });
       // Сохраняем данные локально после успешного (или попытки) заказа
       await ref.read(userPrefsProvider.notifier).save(name, phone);
+      if (isDelivery) await ref.read(userPrefsProvider.notifier).saveAddress(address);
     } catch (_) {
-      // Заказ всё равно уходит в WhatsApp
       await ref.read(userPrefsProvider.notifier).save(name, phone);
+      if (isDelivery) await ref.read(userPrefsProvider.notifier).saveAddress(address);
     }
 
     final uri = Uri.parse(
@@ -167,62 +177,74 @@ $lines
     final isDelivery = delivery == DeliveryType.delivery;
     final fee = deliveryFeeForSubtotal(subtotal, isDelivery: isDelivery);
     final grandTotal = orderGrandTotal(subtotal, fee);
+    final l10n = context.l10n;
+    final shopOpen = isShopOpen();
+    final minErr = l10n.minOrderError(subtotal, isDelivery: isDelivery);
+    final canOrder = shopOpen && minErr == null && !_loading;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Оформление заказа')),
+      appBar: AppBar(title: Text(l10n.checkoutTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionTitle('Тип получения'),
+            _sectionTitle(l10n.checkoutDeliveryType),
             const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: _typeBtn(
-                    label: 'Доставка',
+                    label: l10n.checkoutDelivery,
                     icon: Icons.delivery_dining,
                     selected: delivery == DeliveryType.delivery,
-                    onTap: () => ref.read(_deliveryTypeProvider.notifier).state =
-                        DeliveryType.delivery,
+                    onTap: () =>
+                        ref.read(_deliveryTypeProvider.notifier).state =
+                            DeliveryType.delivery,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _typeBtn(
-                    label: 'Самовывоз',
+                    label: l10n.checkoutPickup,
                     icon: Icons.storefront,
                     selected: delivery == DeliveryType.pickup,
-                    onTap: () => ref.read(_deliveryTypeProvider.notifier).state =
-                        DeliveryType.pickup,
+                    onTap: () =>
+                        ref.read(_deliveryTypeProvider.notifier).state =
+                            DeliveryType.pickup,
                   ),
                 ),
               ],
             ),
             if (delivery == DeliveryType.delivery) ...[
               const SizedBox(height: 20),
-              _sectionTitle('Адрес доставки'),
+              _sectionTitle(l10n.checkoutAddress),
               const SizedBox(height: 8),
               TextField(
                 controller: _addressCtrl,
                 style: const TextStyle(color: AppColors.cream),
                 maxLines: 2,
-                decoration: const InputDecoration(
-                  hintText: 'Улица, дом, квартира',
-                  prefixIcon: Icon(Icons.location_on_outlined, color: AppColors.primary),
+                decoration: InputDecoration(
+                  hintText: l10n.checkoutAddressHint,
+                  prefixIcon: Icon(
+                    Icons.location_on_outlined,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             ],
             const SizedBox(height: 20),
-            _sectionTitle('Контактные данные'),
+            _sectionTitle(l10n.checkoutContacts),
             const SizedBox(height: 8),
             TextField(
               controller: _nameCtrl,
               style: const TextStyle(color: AppColors.cream),
-              decoration: const InputDecoration(
-                hintText: 'Ваше имя',
-                prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
+              decoration: InputDecoration(
+                hintText: l10n.checkoutNameHint,
+                prefixIcon: Icon(
+                  Icons.person_outline,
+                  color: AppColors.primary,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -230,22 +252,25 @@ $lines
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
               style: const TextStyle(color: AppColors.cream),
-              decoration: const InputDecoration(
-                hintText: '777 000 00 00',
+              decoration: InputDecoration(
+                hintText: l10n.checkoutPhoneHint,
                 prefixText: '+7 ',
-                prefixStyle: TextStyle(color: AppColors.cream),
-                prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primary),
+                prefixStyle: const TextStyle(color: AppColors.cream),
+                prefixIcon: const Icon(
+                  Icons.phone_outlined,
+                  color: AppColors.primary,
+                ),
               ),
             ),
             const SizedBox(height: 20),
-            _sectionTitle('Комментарий'),
+            _sectionTitle(l10n.checkoutComment),
             const SizedBox(height: 8),
             TextField(
               controller: _commentCtrl,
               style: const TextStyle(color: AppColors.cream),
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Пожелания, аллергии, уточнения...',
+              decoration: InputDecoration(
+                hintText: l10n.checkoutCommentHint,
               ),
             ),
             const SizedBox(height: 32),
@@ -257,19 +282,19 @@ $lines
               ),
               child: Column(
                 children: [
-                  _totalRow('Сумма блюд', '${formatTenge(subtotal)} тг'),
+                  _totalRow(l10n.checkoutSubtotal, l10n.currencyTenge(formatTenge(subtotal))),
                   const SizedBox(height: 8),
                   _totalRow(
-                    'Доставка',
-                    deliveryFeeShortLabel(subtotal, isDelivery: isDelivery),
+                    l10n.checkoutDeliveryFee,
+                    l10n.deliveryFeeShortLabel(subtotal, isDelivery: isDelivery),
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12),
                     child: Divider(color: AppColors.divider, height: 1),
                   ),
                   _totalRow(
-                    'Итого',
-                    '${formatTenge(grandTotal)} тг',
+                    l10n.checkoutTotal,
+                    l10n.currencyTenge(formatTenge(grandTotal)),
                     valueStyle: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 20,
@@ -280,8 +305,24 @@ $lines
               ),
             ),
             const SizedBox(height: 16),
+            if (!shopOpen) ...[
+              _infoBanner(
+                icon: Icons.access_time_rounded,
+                text: l10n.shopClosedMessage(),
+                color: AppColors.error,
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (minErr != null) ...[
+              _infoBanner(
+                icon: Icons.shopping_bag_outlined,
+                text: minErr,
+                color: AppColors.primary,
+              ),
+              const SizedBox(height: 12),
+            ],
             ElevatedButton.icon(
-              onPressed: _loading ? null : _placeOrder,
+              onPressed: canOrder ? _placeOrder : null,
               icon: _loading
                   ? const SizedBox(
                       width: 18,
@@ -292,15 +333,17 @@ $lines
                       ),
                     )
                   : const Icon(Icons.send, size: 18),
-              label: const Text('Отправить заказ в WhatsApp'),
+              label: Text(l10n.checkoutSubmit),
             ),
-            const SizedBox(height: 8),
-            const Center(
-              child: Text(
-                'Откроется WhatsApp с вашим заказом',
-                style: TextStyle(color: AppColors.greyLight, fontSize: 12),
+            if (canOrder) ...[
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  l10n.checkoutSubmitHint,
+                  style: const TextStyle(color: AppColors.greyLight, fontSize: 12),
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 32),
           ],
         ),
@@ -312,19 +355,57 @@ $lines
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.greyLight, fontSize: 14)),
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.greyLight, fontSize: 14),
+        ),
         Text(
           value,
-          style: valueStyle ??
-              const TextStyle(color: AppColors.cream, fontSize: 14, fontWeight: FontWeight.w500),
+          style:
+              valueStyle ??
+              const TextStyle(
+                color: AppColors.cream,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
         ),
       ],
     );
   }
 
+  Widget _infoBanner({required IconData icon, required String text, required Color color}) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(color: color, fontSize: 13, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _sectionTitle(String text) {
-    return Text(text, style: const TextStyle(
-      color: AppColors.cream, fontSize: 16, fontWeight: FontWeight.w600));
+    return Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.cream,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
+    );
   }
 
   Widget _typeBtn({
@@ -339,7 +420,9 @@ $lines
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withValues(alpha: 0.15) : AppColors.surface,
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.15)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: selected ? AppColors.primary : AppColors.divider,
@@ -362,5 +445,4 @@ $lines
       ),
     );
   }
-
 }

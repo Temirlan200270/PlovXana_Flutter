@@ -20,6 +20,13 @@ class Category extends Equatable {
         sortOrder: (json['sort_order'] as int?) ?? 0,
       );
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'image_url': imageUrl,
+        'sort_order': sortOrder,
+      };
+
   @override
   List<Object?> get props => [id, name, imageUrl, sortOrder];
 }

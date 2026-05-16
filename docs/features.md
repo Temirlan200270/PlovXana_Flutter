@@ -1,11 +1,14 @@
 # Описание экранов и функций
 
+> Справочник путей, `AppConfig`, `delivery_rules`, `user_prefs`, Patrol — [architecture.md](architecture.md#справочник-виджетов).
+
 ## Splash (`SplashScreen`)
 
+**Файл:** [`lib/features/splash/presentation/splash_screen.dart`](../lib/features/splash/presentation/splash_screen.dart)  
 **Маршрут:** `/splash` (стартовый)
 
 - Тёмный фон `AppColors.background`, `IkatPatternBackground`
-- Заголовок «ПЛОВ НОМЕР 1» (золото), fade + scale ~2 с → `context.go('/')`
+- Заголовок «ПЛОВ НОМЕР 1» (золото, `displaySmall`), анимация 1200 ms + задержка 2000 ms → `context.go('/')`
 - Native splash Android/iOS: фон `#1A1A1A`
 
 ---
@@ -14,15 +17,25 @@
 
 **Маршрут:** `/`
 
-- **AppBar:** «ПЛОВ НОМЕР 1» (Playfair), `ShopStatusBadge`, доставка (sheet), выход и «О ресторане»
-- **Поиск:** `IkatPatternBackground` + поле; `searchQueryProvider` → `searchResultsProvider`
+- **AppBar:** «ПЛОВ НОМЕР 1» (Playfair), [`ShopStatusBadge`](../lib/features/menu/presentation/widgets/shop_status_badge.dart) — [`isShopOpen()` / `isClosingSoon()`](../lib/core/config/delivery_rules.dart) (окно 11:00–22:45, «скоро» за 30 мин до последнего заказа), иконки: доставка → sheet, выход, info → 2GIS
+- **Поиск:** `IkatPatternBackground` + поле; `searchQueryProvider` + `searchProvider` (`SearchNotifier`, debounce **300 ms**, `autoDispose`); при непустом запросе — только сетка результатов, блоки акций/категорий/популярного скрыты
 - **Акции:** `PromoBanner` — арочные углы 24/16, fallback с лазурной полосой `accentBlue`
-- **Доставка:** `DeliveryInfoBanner` под акциями → `DeliveryInfoSheet` (700 тг, бесплатно от 10 000 тг, Павлодар, 45–75 мин)
-- **Категории:** `CategoryChip` (96×80, арка, рамка `accentBlue`, иконка по типу кухни) → `/category/:id`
-- **Популярное / Новинки:** `MenuItemCard` — казан-заглушка, stepper `[ − qty + ]`
-- **Состояния:** `MenuShimmer` при загрузке, пустой поиск — «Ничего не найдено»
+- **Доставка:** [`DeliveryInfoBanner`](../lib/shared/widgets/delivery_info_banner.dart) под акциями → [`DeliveryInfoSheet`](../lib/shared/widgets/delivery_info_sheet.dart)
+- **Категории:** горизонтальный скролл `CategoryChip` → `/category/:id?name=...` (только категории с доступными блюдами)
+- **Популярное / Новинки:** двухрядная горизонтальная сетка (`SliverMainAxisGroup`, высота 480, `childAspectRatio: 1.25`), `MenuItemCard`
+- **Состояния:** `MenuShimmer` пока грузятся категории + популярное; пустой поиск — «Ничего не найдено»
 
-Данные: `categoriesProvider`, `popularItemsProvider`, `newItemsProvider`, `promotionsProvider`.
+### Провайдеры ([`menu_providers.dart`](../lib/features/menu/data/menu_providers.dart))
+
+| Provider | Логика |
+|---|---|
+| `categoriesProvider` | Категории с `sort_order`, **только где есть `menu_items` с `is_available = true`** |
+| `popularItemsProvider` | `is_popular = true`, limit 10; если пусто — fallback: первые 10 доступных блюд |
+| `newItemsProvider` | Последние по `created_at`, limit 10 |
+| `promotionsProvider` | `active = true`, по `created_at` desc |
+| `searchQueryProvider` | `StateProvider<String>` — текст в поле |
+| `searchProvider` | `SearchNotifier` — debounce 300 ms, `ilike` по имени, limit 20 |
+| `signOutProvider` | `Supabase.auth.signOut()` |
 
 ---
 
@@ -40,6 +53,8 @@
 ## Детальная страница блюда (`ItemDetailScreen`)
 
 **Маршрут:** `/item/:id` (объект `MenuItem` в `extra`)
+
+**Guard:** если `extra == null` → редирект на `/` ([`app_router.dart`](../lib/core/router/app_router.dart)).
 
 - Hero в `SliverAppBar`; без фото — `DishImagePlaceholder` (казан)
 - Описание, вес, бейджи «Халяль» / «Острое»
@@ -72,6 +87,10 @@
 
 **Маршрут:** `/checkout`
 
+### Автозаполнение
+
+При открытии подставляются `userPrefsProvider` (`name`, `phone`, `lastAddress`). После успешного заказа — `save()` / `saveAddress()`.
+
 ### Поля формы
 
 | Поле | Обязательное | Описание |
@@ -91,8 +110,22 @@
 | Самовывоз | 0 тг |
 | Доставка, сумма блюд ≥ 10 000 тг | Бесплатно |
 | Доставка, сумма блюд &lt; 10 000 тг | 700 тг |
+| Минимум для доставки | 3 000 тг (`minDeliveryOrderAmount`) — только доставка |
 
 UI: «Сумма блюд» + «Доставка» + «Итого». `FloatingCartBar` показывает только сумму блюд.
+
+### Валидация перед отправкой
+
+```dart
+canOrder = isShopOpen() && minOrderError(subtotal, isDelivery: ...) == null && !_loading
+```
+
+| Баннер | Цвет | Когда |
+|---|---|---|
+| `shopClosedMessage()` | `AppColors.error` (красный) | Ресторан закрыт (`!isShopOpen()`) |
+| `minOrderError(...)` | `AppColors.primary` (золотой) | Сумма блюд &lt; 3 000 тг при доставке |
+
+Кнопка «Отправить заказ в WhatsApp» **disabled**, если `!canOrder`.
 
 ### Логика отправки
 
@@ -167,7 +200,7 @@ SMS-провайдер: [supabase-setup.md](supabase-setup.md).
 | Поле | По умолчанию | Ограничения |
 |---|---|---|
 | Дата | Завтра | сегодня … +60 дней |
-| Время | 13:00 | системный пикер |
+| Время | 13:00 | системный пикер; в БД и WhatsApp — `_formatTime()` → всегда `HH:mm` (например `09:05`) |
 | Гости | 2 | 1–20 |
 | Имя | — | обязательно |
 | Телефон | — | обязательно |
@@ -199,9 +232,66 @@ SMS-провайдер: [supabase-setup.md](supabase-setup.md).
 
 ---
 
+## Профиль (`ProfileScreen`)
+
+**Файл:** [`lib/features/profile/presentation/screens/profile_screen.dart`](../lib/features/profile/presentation/screens/profile_screen.dart)  
+**Маршрут:** `/profile` (вкладка BottomNav)
+
+- Аватар-заглушка, имя из `userPrefsProvider`
+- Телефон: Supabase `currentUser.phone` или `+7` + prefs
+- Последний адрес доставки (если сохранён)
+- Переключатель языка: **Русский / Қазақша** (`localeProvider`, ключ `app_locale` в SharedPreferences)
+- Ссылка «История заказов» → `/orders`
+- Кнопка «Выйти из аккаунта» → `signOutProvider` (удаляет FCM-токен)
+
+---
+
+## История заказов (`OrdersScreen`)
+
+**Файл:** [`lib/features/orders/presentation/screens/orders_screen.dart`](../lib/features/orders/presentation/screens/orders_screen.dart)  
+**Маршрут:** `/orders`
+
+- Список `orders` текущего пользователя (`ordersProvider`)
+- Статусы в UI: Принят / Подтверждён / Выполнен (локализованы)
+- Тап по пушу о статусе → этот экран
+
+---
+
+## Мультиязычность (ru / kk)
+
+| Что | Детали |
+|---|---|
+| Файлы | `lib/l10n/app_ru.arb`, `app_kk.arb` → `flutter gen-l10n` |
+| Провайдер | [`locale_provider.dart`](../lib/core/l10n/locale_provider.dart) |
+| UI | Все экраны через `context.l10n` / [`delivery_l10n.dart`](../lib/core/l10n/delivery_l10n.dart) |
+| Меню | Названия блюд из Supabase **не переводятся** (как в iiko) |
+| По умолчанию | Русский; казахский — в профиле |
+
+---
+
+## Пуш-уведомления (статус заказа)
+
+**MVP:** только смена `orders.status` менеджером в Supabase.
+
+| Переход | Пуш |
+|---|---|
+| `pending` → `confirmed` | Заказ подтверждён |
+| `confirmed` → `done` | Заказ выполнен |
+
+| Компонент | Путь |
+|---|---|
+| FCM-клиент | [`fcm_service.dart`](../lib/features/notifications/data/fcm_service.dart) |
+| Токены в БД | таблица `push_tokens` (миграция `20260516120000_push_tokens.sql`) |
+| Edge Function | [`send-order-push`](../supabase/functions/send-order-push/index.ts) |
+| Настройка | [supabase-setup.md](supabase-setup.md#push-уведомления-fcm) |
+
+Токен регистрируется после OTP и при смене языка; при выходе удаляется.
+
+---
+
 ## MainScaffold (общая оболочка)
 
-**Файлы:** `main_scaffold.dart`, `floating_cart_bar.dart`, `dish_image_placeholder.dart`, `ikat_pattern_background.dart`, `delivery_info_banner.dart`, `delivery_info_sheet.dart`
+**Файлы:** [`main_scaffold.dart`](../lib/shared/widgets/main_scaffold.dart), [`floating_cart_bar.dart`](../lib/shared/widgets/floating_cart_bar.dart), [`dish_image_placeholder.dart`](../lib/shared/widgets/dish_image_placeholder.dart), [`ikat_pattern_background.dart`](../lib/shared/widgets/ikat_pattern_background.dart), [`delivery_info_banner.dart`](../lib/shared/widgets/delivery_info_banner.dart), [`delivery_info_sheet.dart`](../lib/shared/widgets/delivery_info_sheet.dart)
 
 ### BottomNavigationBar
 
@@ -209,6 +299,7 @@ SMS-провайдер: [supabase-setup.md](supabase-setup.md).
 |---|---|---|
 | 0 | Меню | `/` |
 | 1 | Бронь | `/reservation` |
+| 2 | Профиль | `/profile` |
 
 ### FloatingCartBar
 
@@ -228,6 +319,6 @@ SMS-провайдер: [supabase-setup.md](supabase-setup.md).
 | `showDeliveryInfoSheet` | `delivery_info_sheet.dart` | Bottom sheet с полными условиями |
 | AppBar (главная) | `home_screen.dart` | Иконка доставки → тот же sheet |
 
-Тексты баннера генерируются в `deliveryBannerSummary()` из `AppConfig`.
+Тексты баннера — `context.l10n.deliveryBannerSummary()` (локализовано).
 
 Маршруты `/splash`, `/cart`, `/checkout`, `/auth`, `/item/:id` — **вне** ShellRoute (без нижнего меню; `/splash` и checkout — без FloatingCartBar).

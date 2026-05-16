@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/config/app_config.dart';
 import '../../core/config/delivery_rules.dart';
+import '../../core/l10n/delivery_l10n.dart';
 import '../../core/theme/app_colors.dart';
 
 void showDeliveryInfoSheet(BuildContext context) {
@@ -10,15 +11,19 @@ void showDeliveryInfoSheet(BuildContext context) {
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
-    builder: (_) => const DeliveryInfoSheet(),
+    builder: (ctx) => DeliveryInfoSheet(parentContext: context),
   );
 }
 
 class DeliveryInfoSheet extends StatelessWidget {
-  const DeliveryInfoSheet({super.key});
+  const DeliveryInfoSheet({super.key, required this.parentContext});
+
+  final BuildContext parentContext;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = parentContext.l10n;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
       child: Column(
@@ -37,36 +42,40 @@ class DeliveryInfoSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Условия доставки',
+            l10n.deliverySheetTitle,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 20),
           _row(
             Icons.payments_outlined,
-            'Стоимость',
-            '${formatTenge(AppConfig.deliveryFee)} тг. '
-            'Бесплатно при заказе от ${formatTenge(AppConfig.freeDeliveryThreshold)} тг.',
+            l10n.deliverySheetCostTitle,
+            l10n.deliverySheetCostBody(
+              formatTenge(AppConfig.deliveryFee),
+              formatTenge(AppConfig.freeDeliveryThreshold),
+            ),
           ),
           _row(
             Icons.location_on_outlined,
-            'Зона',
-            'Доставка по всему ${AppConfig.deliveryCity}.',
+            l10n.deliverySheetZoneTitle,
+            l10n.deliverySheetZoneBody(AppConfig.deliveryCity),
           ),
           _row(
             Icons.schedule_outlined,
-            'Время',
-            'В среднем ${AppConfig.deliveryEtaMinMinutes}–'
-            '${AppConfig.deliveryEtaMaxMinutes} минут.',
+            l10n.deliverySheetTimeTitle,
+            l10n.deliverySheetTimeBody(
+              AppConfig.deliveryEtaMinMinutes,
+              AppConfig.deliveryEtaMaxMinutes,
+            ),
           ),
           _row(
             Icons.phone_outlined,
-            'Телефон',
+            l10n.deliverySheetPhoneTitle,
             AppConfig.deliveryPhoneDisplay,
           ),
           _row(
             Icons.account_balance_wallet_outlined,
-            'Оплата',
-            'Наличные или Kaspi перевод при получении.',
+            l10n.deliverySheetPaymentTitle,
+            l10n.deliverySheetPaymentBody,
           ),
           const SizedBox(height: 8),
         ],

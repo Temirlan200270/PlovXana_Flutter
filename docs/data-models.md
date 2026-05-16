@@ -34,6 +34,7 @@ class MenuItem extends Equatable {
   final bool isSpicy;
   final bool isAvailable;
   final int sortOrder;
+  // is_popular — только в БД; в Dart-модели нет, используется в popularItemsProvider
 }
 ```
 
@@ -54,6 +55,18 @@ class CartItem extends Equatable {
 ```
 
 Хранится только в памяти (`CartNotifier`). В Supabase не сохраняется.
+
+---
+
+### Локальные prefs (`UserPrefsState`)
+
+Не Dart-модель Equatable — [`user_prefs.dart`](../lib/core/config/user_prefs.dart).
+
+| Поле | Ключ SharedPreferences | Где используется |
+|---|---|---|
+| `name` | `user_name` | Checkout, бронь |
+| `phone` | `user_phone` | Checkout, бронь |
+| `lastAddress` | `user_last_address` | Checkout (доставка) |
 
 ---
 
@@ -176,9 +189,12 @@ class Promotion extends Equatable {
 
 ## Запросы к Supabase
 
-### Категории (sorted)
+Реализация — в [`menu_providers.dart`](../lib/features/menu/data/menu_providers.dart).
+
+### Категории (только с блюдами)
 ```dart
-client.from('categories').select().order('sort_order').order('name')
+// 1) id категорий, у которых есть is_available = true
+// 2) categories WHERE id IN (...) ORDER BY sort_order, name
 ```
 
 ### Блюда по категории
@@ -191,14 +207,39 @@ client.from('menu_items')
   .order('name')
 ```
 
-### Популярные блюда
+### Популярное (с fallback)
+```dart
+// Сначала is_popular = true, limit 10
+// Если пусто — любые is_available, limit 10
+```
+
+### Новинки
 ```dart
 client.from('menu_items')
   .select()
   .eq('is_available', true)
-  .eq('is_popular', true)
-  .order('sort_order')
+  .order('created_at', ascending: false)
   .limit(10)
+```
+
+### Поиск
+
+Через `SearchNotifier` в [`menu_providers.dart`](../lib/features/menu/data/menu_providers.dart) — debounce **300 ms**, провайдер `searchProvider` (`autoDispose`).
+
+```dart
+client.from('menu_items')
+  .select()
+  .ilike('name', '%${query.trim()}%')
+  .eq('is_available', true)
+  .limit(20)
+```
+
+### Акции
+```dart
+client.from('promotions')
+  .select()
+  .eq('active', true)
+  .order('created_at', ascending: false)
 ```
 
 ### Запись заказа

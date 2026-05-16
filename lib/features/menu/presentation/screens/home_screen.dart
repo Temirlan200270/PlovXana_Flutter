@@ -12,6 +12,9 @@ import '../widgets/shop_status_badge.dart';
 import '../../../../shared/widgets/delivery_info_banner.dart';
 import '../../../../shared/widgets/delivery_info_sheet.dart';
 import '../../../../shared/widgets/ikat_pattern_background.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/config/app_config.dart';
+import '../../../../core/l10n/delivery_l10n.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -36,8 +39,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final newItemsAsync = ref.watch(newItemsProvider);
     final promotionsAsync = ref.watch(promotionsProvider);
     final searchQuery = ref.watch(searchQueryProvider);
-    final searchResultsAsync = ref.watch(searchResultsProvider);
+    final searchResultsAsync = ref.watch(searchProvider);
 
+    final l10n = context.l10n;
     final isLoading = categoriesAsync.isLoading || popularAsync.isLoading;
 
     if (isLoading && searchQuery.isEmpty) {
@@ -58,7 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'ПЛОВ НОМЕР 1',
+                        l10n.appTitle,
                         style: Theme.of(context).appBarTheme.titleTextStyle,
                       ),
                       const ShopStatusBadge(),
@@ -87,10 +91,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: TextField(
                 controller: _searchCtrl,
-                onChanged: (v) => ref.read(searchQueryProvider.notifier).state = v,
+                onChanged: (v) {
+                  ref.read(searchQueryProvider.notifier).state = v;
+                  ref.read(searchProvider.notifier).search(v);
+                },
                 style: const TextStyle(color: AppColors.cream),
                 decoration: InputDecoration(
-                  hintText: 'Поиск блюд...',
+                  hintText: l10n.searchHint,
                   prefixIcon: const Icon(Icons.search, color: AppColors.grey),
                   suffixIcon: searchQuery.isNotEmpty
                       ? IconButton(
@@ -111,6 +118,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
+          if (categoriesAsync.hasError)
+            const SliverToBoxAdapter(child: _OfflineBanner()),
           if (searchQuery.isNotEmpty)
             _buildSearchResults(searchResultsAsync)
           else ...[
@@ -124,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SliverToBoxAdapter(child: DeliveryInfoBanner()),
-            _buildSectionTitle('Категории'),
+            _buildSectionTitle(l10n.sectionCategories),
             SliverToBoxAdapter(
               child: categoriesAsync.when(
                 data: (cats) => SizedBox(
@@ -146,8 +155,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 error: (_, _) => const SizedBox.shrink(),
               ),
             ),
-            _buildSection('Популярное', popularAsync),
-            _buildSection('Новинки', newItemsAsync),
+            _buildSection(l10n.sectionPopular, popularAsync),
+            _buildSection(l10n.sectionNew, newItemsAsync),
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ],
@@ -205,14 +214,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSearchResults(AsyncValue<List<dynamic>> results) {
+    final l10n = context.l10n;
     return results.when(
       data: (items) => items.isEmpty
-          ? const SliverToBoxAdapter(
+          ? SliverToBoxAdapter(
               child: Center(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 48),
-                  child: Text('Ничего не найдено',
-                      style: TextStyle(color: AppColors.grey)),
+                  padding: const EdgeInsets.only(top: 48),
+                  child: Text(l10n.nothingFound,
+                      style: const TextStyle(color: AppColors.grey)),
                 ),
               ),
             )
@@ -241,19 +251,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showLogoutConfirm(BuildContext context) {
+    final l10n = context.l10n;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Выйти?', style: TextStyle(color: AppColors.cream)),
-        content: const Text(
-          'Вы уверены, что хотите выйти из аккаунта?',
-          style: TextStyle(color: AppColors.greyLight),
+        title: Text(l10n.logoutTitle, style: const TextStyle(color: AppColors.cream)),
+        content: Text(
+          l10n.logoutMessage,
+          style: const TextStyle(color: AppColors.greyLight),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -263,11 +274,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               if (mounted) {
                 nav.pop();
                 sm.showSnackBar(
-                  const SnackBar(content: Text('Вы вышли из системы')),
+                  SnackBar(content: Text(l10n.logoutSuccess)),
                 );
               }
             },
-            child: const Text('Выйти', style: TextStyle(color: AppColors.error)),
+            child: Text(l10n.logout, style: const TextStyle(color: AppColors.error)),
           ),
         ],
       ),
@@ -275,6 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showInfo(BuildContext context) {
+    final l10n = context.l10n;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -288,16 +300,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'ПЛОВ НОМЕР 1',
+              l10n.aboutRestaurant,
               style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 16),
-            _infoRow(Icons.location_on_outlined,
-                'ТЦ Saida Plaza, пр. Нурсултана Назарбаева, 60/5, 1 этаж'),
-            _infoRow(Icons.access_time_outlined,
-                'Ежедневно 11:00–24:00\nПоследний заказ: 22:45'),
-            _infoRow(Icons.phone_outlined, '+7 777 400 77 28 — бронирование'),
-            _infoRow(Icons.delivery_dining_outlined, '+7 707 400 77 28 — доставка'),
+            GestureDetector(
+              onTap: () async {
+                final uri = Uri.parse(AppConfig.restaurant2GISUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: _infoRow(
+                Icons.location_on_outlined,
+                l10n.aboutAddress,
+                valueColor: AppColors.accentBlue,
+              ),
+            ),
+            _infoRow(Icons.access_time_outlined, l10n.aboutHours),
+            _infoRow(Icons.phone_outlined, l10n.aboutPhoneBooking),
+            _infoRow(Icons.delivery_dining_outlined, l10n.aboutPhoneDelivery),
             const SizedBox(height: 8),
           ],
         ),
@@ -305,7 +327,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _infoRow(IconData icon, String text) {
+  Widget _infoRow(IconData icon, String text, {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -314,7 +336,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Icon(icon, color: AppColors.primary, size: 20),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(text, style: const TextStyle(color: AppColors.cream, height: 1.5)),
+            child: Text(
+              text,
+              style: TextStyle(
+                color: valueColor ?? AppColors.cream,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off, size: 16, color: AppColors.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n.offlineMenuCache,
+              style: const TextStyle(color: AppColors.primary, fontSize: 12),
+            ),
           ),
         ],
       ),

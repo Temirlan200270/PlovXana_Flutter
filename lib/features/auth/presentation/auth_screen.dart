@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/l10n/delivery_l10n.dart';
+import '../../../core/l10n/locale_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../notifications/data/fcm_service.dart';
 
 final _phoneProvider = StateProvider<String>((_) => '');
 final _otpSentProvider = StateProvider<bool>((_) => false);
@@ -28,9 +31,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _sendOtp() async {
+    final l10n = context.l10n;
     final phone = '+7${_phoneCtrl.text.replaceAll(RegExp(r'\D'), '')}';
     if (phone.length < 11) {
-      _showError('Введите корректный номер телефона');
+      _showError(l10n.errorPhoneInvalid);
       return;
     }
     ref.read(_loadingProvider.notifier).state = true;
@@ -39,17 +43,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ref.read(_phoneProvider.notifier).state = phone;
       ref.read(_otpSentProvider.notifier).state = true;
     } catch (e) {
-      _showError('Ошибка отправки кода: $e');
+      _showError(l10n.errorOtpSend('$e'));
     } finally {
       ref.read(_loadingProvider.notifier).state = false;
     }
   }
 
   Future<void> _verifyOtp() async {
+    final l10n = context.l10n;
     final phone = ref.read(_phoneProvider);
     final token = _otpCtrl.text.trim();
     if (token.length != 6) {
-      _showError('Введите 6-значный код');
+      _showError(l10n.errorOtpInvalid);
       return;
     }
     ref.read(_loadingProvider.notifier).state = true;
@@ -59,9 +64,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         token: token,
         type: OtpType.sms,
       );
+      final locale = ref.read(localeProvider).languageCode;
+      await ref.read(fcmServiceProvider).registerTokenForCurrentUser(locale);
       if (mounted) context.pop();
     } catch (e) {
-      _showError('Неверный код. Попробуйте ещё раз');
+      _showError(l10n.errorOtpWrong);
     } finally {
       ref.read(_loadingProvider.notifier).state = false;
     }
@@ -78,25 +85,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final otpSent = ref.watch(_otpSentProvider);
     final loading = ref.watch(_loadingProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Вход')),
+      appBar: AppBar(title: Text(l10n.authTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              otpSent ? 'Введите код из СМС' : 'Введите номер телефона',
+              otpSent ? l10n.authOtpTitle : l10n.authPhoneTitle,
               style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 8),
             Text(
               otpSent
-                  ? 'Мы отправили код на ${ref.watch(_phoneProvider)}'
-                  : 'Для оформления заказа нужна авторизация',
+                  ? l10n.authOtpSubtitle(ref.watch(_phoneProvider))
+                  : l10n.authPhoneSubtitle,
               style: const TextStyle(color: AppColors.greyLight),
             ),
             const SizedBox(height: 32),
@@ -107,10 +115,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 maxLength: 10,
                 style: const TextStyle(color: AppColors.cream, fontSize: 18),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   prefixText: '+7 ',
-                  prefixStyle: TextStyle(color: AppColors.cream, fontSize: 18),
-                  hintText: '777 000 00 00',
+                  prefixStyle: const TextStyle(color: AppColors.cream, fontSize: 18),
+                  hintText: l10n.checkoutPhoneHint,
                   counterText: '',
                 ),
               ),
@@ -121,9 +129,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
                       )
-                    : const Text('Получить код'),
+                    : Text(l10n.authGetCode),
               ),
             ] else ...[
               TextField(
@@ -131,9 +140,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 maxLength: 6,
-                style: const TextStyle(color: AppColors.cream, fontSize: 28, letterSpacing: 8),
+                style: const TextStyle(
+                    color: AppColors.cream, fontSize: 28, letterSpacing: 8),
                 textAlign: TextAlign.center,
-                decoration: const InputDecoration(counterText: '', hintText: '000000'),
+                decoration: InputDecoration(
+                    counterText: '', hintText: l10n.authOtpHint),
                 autofocus: true,
               ),
               const SizedBox(height: 24),
@@ -143,15 +154,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2),
                       )
-                    : const Text('Подтвердить'),
+                    : Text(l10n.authConfirm),
               ),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(
                   onPressed: () => ref.read(_otpSentProvider.notifier).state = false,
-                  child: const Text('Изменить номер'),
+                  child: Text(l10n.authChangePhone),
                 ),
               ),
             ],

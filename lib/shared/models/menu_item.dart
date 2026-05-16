@@ -41,6 +41,20 @@ class MenuItem extends Equatable {
         sortOrder: (json['sort_order'] as int?) ?? 0,
       );
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'category_id': categoryId,
+        'name': name,
+        'description': description,
+        'price': price,
+        'image_url': imageUrl,
+        'weight_g': weightG,
+        'is_halal': isHalal,
+        'is_spicy': isSpicy,
+        'is_available': isAvailable,
+        'sort_order': sortOrder,
+      };
+
   @override
   List<Object?> get props => [id, categoryId, name, price];
 }

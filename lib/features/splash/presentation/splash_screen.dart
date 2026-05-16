@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/l10n/delivery_l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/ikat_pattern_background.dart';
 
@@ -44,6 +45,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: IkatPatternBackground(
@@ -56,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'ПЛОВ НОМЕР 1',
+                    l10n.appTitle,
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           color: AppColors.primary,
                           letterSpacing: 1.2,

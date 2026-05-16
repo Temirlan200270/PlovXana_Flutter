@@ -22,10 +22,35 @@ class CategoryScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(categoryName)),
       body: itemsAsync.when(
         data: (items) => items.isEmpty
-            ? const Center(
-                child: Text(
-                  'В этой категории пока нет блюд',
-                  style: TextStyle(color: AppColors.greyLight),
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.no_food_outlined, size: 64, color: AppColors.grey),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Всё временно в стоп-листе',
+                        style: TextStyle(
+                          color: AppColors.cream,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Попробуйте другую категорию\nили загляните позже — мы пополняем меню каждый день',
+                        style: TextStyle(
+                          color: AppColors.greyLight,
+                          fontSize: 13,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               )
             : GridView.builder(

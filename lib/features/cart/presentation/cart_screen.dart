@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/config/delivery_rules.dart';
+import '../../../core/l10n/delivery_l10n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/widgets/dish_image_placeholder.dart';
 import '../../../shared/widgets/ikat_pattern_background.dart';
@@ -12,17 +14,19 @@ class CartScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final cart = ref.watch(cartProvider);
     final total = ref.watch(cartTotalProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Корзина'),
+        title: Text(l10n.cartTitle),
         actions: [
           if (cart.isNotEmpty)
             TextButton(
               onPressed: () => ref.read(cartProvider.notifier).clear(),
-              child: const Text('Очистить', style: TextStyle(color: AppColors.error)),
+              child: Text(l10n.cartClear,
+                  style: const TextStyle(color: AppColors.error)),
             ),
         ],
       ),
@@ -34,14 +38,15 @@ class CartScreen extends ConsumerWidget {
                   children: [
                     const DishImagePlaceholder(width: 96, height: 96, iconSize: 48),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Корзина пуста',
-                      style: TextStyle(color: AppColors.greyLight, fontSize: 18),
+                    Text(
+                      l10n.cartEmpty,
+                      style: const TextStyle(
+                          color: AppColors.greyLight, fontSize: 18),
                     ),
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: () => context.go('/'),
-                      child: const Text('Перейти в меню'),
+                      child: Text(l10n.cartGoToMenu),
                     ),
                   ],
                 ),
@@ -61,7 +66,8 @@ class CartScreen extends ConsumerWidget {
                   child: Row(
                     children: [
                       ClipRRect(
-                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                        borderRadius: const BorderRadius.horizontal(
+                            left: Radius.circular(16)),
                         child: ci.item.imageUrl != null
                             ? CachedNetworkImage(
                                 imageUrl: ci.item.imageUrl!,
@@ -80,13 +86,15 @@ class CartScreen extends ConsumerWidget {
                             Text(
                               ci.item.name,
                               style: const TextStyle(
-                                  color: AppColors.cream, fontWeight: FontWeight.w600),
+                                  color: AppColors.cream,
+                                  fontWeight: FontWeight.w600),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${_fmt(ci.item.price)} тг',
-                              style: const TextStyle(color: AppColors.greyLight, fontSize: 13),
+                              l10n.currencyTenge(formatTenge(ci.item.price)),
+                              style: const TextStyle(
+                                  color: AppColors.greyLight, fontSize: 13),
                               maxLines: 1,
                             ),
                           ],
@@ -95,15 +103,19 @@ class CartScreen extends ConsumerWidget {
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(Icons.remove_circle_outline, color: AppColors.grey),
+                            icon: const Icon(Icons.remove_circle_outline,
+                                color: AppColors.grey),
                             onPressed: () =>
                                 ref.read(cartProvider.notifier).remove(ci.item.id),
                           ),
                           Text('${ci.quantity}',
-                              style: const TextStyle(color: AppColors.cream, fontSize: 16)),
+                              style: const TextStyle(
+                                  color: AppColors.cream, fontSize: 16)),
                           IconButton(
-                            icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
-                            onPressed: () => ref.read(cartProvider.notifier).add(ci.item),
+                            icon: const Icon(Icons.add_circle_outline,
+                                color: AppColors.primary),
+                            onPressed: () =>
+                                ref.read(cartProvider.notifier).add(ci.item),
                           ),
                         ],
                       ),
@@ -119,7 +131,7 @@ class CartScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(16),
                 child: ElevatedButton(
                   onPressed: () => context.push('/checkout'),
-                  child: Text('Оформить · ${_fmt(total)} тг'),
+                  child: Text(l10n.cartCheckout(formatTenge(total))),
                 ),
               ),
             ),
@@ -128,12 +140,5 @@ class CartScreen extends ConsumerWidget {
 
   Widget _imgPlaceholder() {
     return const DishImagePlaceholder(width: 88, height: 88, iconSize: 32);
-  }
-
-  String _fmt(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]} ',
-        );
   }
 }

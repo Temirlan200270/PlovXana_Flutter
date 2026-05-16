@@ -1,0 +1,207 @@
+{
+  "@@locale": "ru",
+  "appTitle": "ПЛОВ НОМЕР 1",
+  "navMenu": "Меню",
+  "navReservation": "Бронь",
+  "navProfile": "Профиль",
+  "searchHint": "Поиск блюд...",
+  "sectionPopular": "Популярное",
+  "sectionNew": "Новинки",
+  "sectionCategories": "Категории",
+  "nothingFound": "Ничего не найдено",
+  "offlineBanner": "Нет подключения к интернету",
+  "offlineMenuCache": "Нет интернета — показываем последнее меню",
+  "logoutSuccess": "Вы вышли из системы",
+  "logoutTitle": "Выйти?",
+  "logoutMessage": "Вы уверены, что хотите выйти из аккаунта?",
+  "cancel": "Отмена",
+  "logout": "Выйти",
+  "aboutRestaurant": "ПЛОВ НОМЕР 1",
+  "aboutAddress": "ТЦ Saida Plaza, пр. Нурсултана Назарбаева, 60/5, 1 этаж\nНажмите, чтобы открыть в 2GIS",
+  "aboutHours": "Ежедневно 11:00–24:00\nПоследний заказ: 22:45",
+  "aboutPhoneBooking": "+7 777 400 77 28 — бронирование",
+  "aboutPhoneDelivery": "+7 707 400 77 28 — доставка",
+  "shopStatusOpenLabel": "Сейчас открыто",
+  "shopStatusClosingSoonLabel": "Закроется скоро",
+  "shopStatusClosedLabel": "Закрыто до 11:00",
+  "shopClosedOpensToday": "Ресторан откроется сегодня в 11:00",
+  "shopClosedAfterHours": "Ресторан закрыт. Последний заказ до 22:45.\nПриходите завтра с 11:00!",
+  "minOrderErrorBody": "Минимальная сумма доставки — {min} тг. Добавьте блюд ещё на {diff} тг",
+  "@minOrderErrorBody": {
+    "placeholders": {
+      "min": {"type": "String"},
+      "diff": {"type": "String"}
+    }
+  },
+  "deliveryFeeDash": "—",
+  "deliveryFree": "Бесплатно",
+  "deliveryFeeAmount": "{amount} тг",
+  "@deliveryFeeAmount": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "deliveryBannerBody": "Доставка по {city} · {fee} тг · бесплатно от {threshold} тг · {minMinutes}–{maxMinutes} мин",
+  "@deliveryBannerBody": {
+    "placeholders": {
+      "city": {"type": "String"},
+      "fee": {"type": "String"},
+      "threshold": {"type": "String"},
+      "minMinutes": {"type": "int"},
+      "maxMinutes": {"type": "int"}
+    }
+  },
+  "deliverySheetTitle": "Условия доставки",
+  "deliverySheetCostTitle": "Стоимость",
+  "deliverySheetCostBody": "{fee} тг. Бесплатно при заказе от {threshold} тг.",
+  "@deliverySheetCostBody": {
+    "placeholders": {
+      "fee": {"type": "String"},
+      "threshold": {"type": "String"}
+    }
+  },
+  "deliverySheetZoneTitle": "Зона",
+  "deliverySheetZoneBody": "Доставка по всему {city}.",
+  "@deliverySheetZoneBody": {
+    "placeholders": {"city": {"type": "String"}}
+  },
+  "deliverySheetTimeTitle": "Время",
+  "deliverySheetTimeBody": "В среднем {min}–{max} минут.",
+  "@deliverySheetTimeBody": {
+    "placeholders": {
+      "min": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "deliverySheetPhoneTitle": "Телефон",
+  "deliverySheetPaymentTitle": "Оплата",
+  "deliverySheetPaymentBody": "Наличные или Kaspi перевод при получении.",
+  "cartTitle": "Корзина",
+  "cartClear": "Очистить",
+  "cartEmpty": "Корзина пуста",
+  "cartGoToMenu": "Перейти в меню",
+  "cartCheckout": "Оформить · {total} тг",
+  "@cartCheckout": {
+    "placeholders": {"total": {"type": "String"}}
+  },
+  "cartDishesOne": "{count} блюдо",
+  "@cartDishesOne": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "cartDishesFew": "{count} блюда",
+  "@cartDishesFew": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "cartDishesMany": "{count} блюд",
+  "@cartDishesMany": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "cartBarLabel": "Корзина · {dishes}",
+  "@cartBarLabel": {
+    "placeholders": {"dishes": {"type": "String"}}
+  },
+  "currencyTenge": "{amount} тг",
+  "@currencyTenge": {
+    "placeholders": {"amount": {"type": "String"}}
+  },
+  "checkoutTitle": "Оформление заказа",
+  "checkoutDeliveryType": "Тип получения",
+  "checkoutDelivery": "Доставка",
+  "checkoutPickup": "Самовывоз",
+  "checkoutAddress": "Адрес доставки",
+  "checkoutAddressHint": "Улица, дом, квартира",
+  "checkoutContacts": "Контактные данные",
+  "checkoutNameHint": "Ваше имя",
+  "checkoutPhoneHint": "777 000 00 00",
+  "checkoutComment": "Комментарий",
+  "checkoutCommentHint": "Пожелания, аллергии, уточнения...",
+  "checkoutSubtotal": "Сумма блюд",
+  "checkoutDeliveryFee": "Доставка",
+  "checkoutTotal": "Итого",
+  "checkoutSubmit": "Отправить заказ в WhatsApp",
+  "checkoutSubmitHint": "Откроется WhatsApp с вашим заказом",
+  "errorPhoneRequired": "Укажите номер телефона",
+  "errorAddressRequired": "Укажите адрес доставки",
+  "authTitle": "Вход",
+  "authPhoneTitle": "Введите номер телефона",
+  "authOtpTitle": "Введите код из СМС",
+  "authPhoneSubtitle": "Для оформления заказа нужна авторизация",
+  "authOtpSubtitle": "Мы отправили код на {phone}",
+  "@authOtpSubtitle": {
+    "placeholders": {"phone": {"type": "String"}}
+  },
+  "authGetCode": "Получить код",
+  "authConfirm": "Подтвердить",
+  "authChangePhone": "Изменить номер",
+  "authOtpHint": "000000",
+  "errorPhoneInvalid": "Введите корректный номер телефона",
+  "errorOtpSend": "Ошибка отправки кода: {error}",
+  "@errorOtpSend": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "errorOtpInvalid": "Введите 6-значный код",
+  "errorOtpWrong": "Неверный код. Попробуйте ещё раз",
+  "orderSentTitle": "Заказ отправлен!",
+  "orderSentBody": "Мы получили ваш заказ и свяжемся с вами в WhatsApp",
+  "orderSentBack": "Вернуться в меню",
+  "reservationTitle": "Бронирование стола",
+  "reservationDate": "Дата",
+  "reservationTime": "Время",
+  "reservationGuests": "Гостей",
+  "reservationName": "Имя",
+  "reservationPhone": "Телефон",
+  "reservationComment": "Комментарий",
+  "reservationChooseDateTime": "Выберите дату и время",
+  "reservationGuestsLabel": "Количество гостей",
+  "reservationCommentHint": "Пожелания (отдельный зал, детское место...)",
+  "reservationSendWhatsapp": "Отправить бронь в WhatsApp",
+  "reservationPhoneConfirm": "Подтверждение придёт по телефону",
+  "errorReservationContacts": "Укажите имя и телефон",
+  "selectRequiredModifiers": "Выберите обязательные опции",
+  "itemQuantityLine": "{qty} шт · {total} тг",
+  "@itemQuantityLine": {
+    "placeholders": {
+      "qty": {"type": "int"},
+      "total": {"type": "String"}
+    }
+  },
+  "orderSentBodyLong": "Ваш заказ отправлен в WhatsApp ресторана. Ожидайте подтверждения от оператора.",
+  "reservationSubmit": "Забронировать стол",
+  "reservationSuccess": "Запрос на бронирование отправлен!",
+  "errorNameRequired": "Укажите имя",
+  "errorGuestsRequired": "Укажите количество гостей",
+  "profileTitle": "Профиль",
+  "profilePhone": "Телефон",
+  "profilePhoneMissing": "Не указан",
+  "profileLastAddress": "Последний адрес доставки",
+  "profileOrders": "История заказов",
+  "profileLogout": "Выйти из аккаунта",
+  "profileLanguage": "Язык",
+  "languageRu": "Русский",
+  "languageKk": "Қазақша",
+  "ordersTitle": "Мои заказы",
+  "ordersEmpty": "Заказов пока нет",
+  "ordersEmptyHint": "Ваши заказы появятся здесь",
+  "ordersError": "Ошибка: {error}",
+  "@ordersError": {
+    "placeholders": {"error": {"type": "String"}}
+  },
+  "ordersMoreItems": "+ ещё {count} позиц.",
+  "@ordersMoreItems": {
+    "placeholders": {"count": {"type": "int"}}
+  },
+  "orderStatusPending": "Принят",
+  "orderStatusConfirmed": "Подтверждён",
+  "orderStatusDone": "Выполнен",
+  "itemNotFound": "Блюдо не найдено",
+  "loadError": "Ошибка загрузки",
+  "addToCart": "Добавить в корзину",
+  "halal": "Халяль",
+  "spicy": "Острое",
+  "weightGrams": "{weight} г",
+  "@weightGrams": {
+    "placeholders": {"weight": {"type": "int"}}
+  },
+  "pushOrderConfirmedTitle": "Заказ подтверждён",
+  "pushOrderConfirmedBody": "Ресторан принял ваш заказ",
+  "pushOrderDoneTitle": "Заказ выполнен",
+  "pushOrderDoneBody": "Приятного аппетита!"
+}

@@ -13,6 +13,7 @@ flutter run
 ```
 
 Старт приложения: `/splash` (~2 с) → главная.  
+Нижняя навигация: **Меню** · **Бронь** · **Профиль**.  
 Supabase подключён, схема задеплоена, iiko-синхронизация настроена.
 
 ---
@@ -54,10 +55,14 @@ python sync.py all     # всё сразу
 |---|---|
 | Стоимость | 700 тг |
 | Бесплатно от | 10 000 тг (сумма блюд) |
+| Минимум доставки | 3 000 тг (сумма блюд) |
+| Приём заказов | 11:00–22:45 |
 | Время | 45–75 мин |
 | Зона | весь Павлодар |
 
-Плашка + sheet на главной; в checkout — разбивка «Сумма блюд / Доставка / Итого». Подробно — [docs/features.md](docs/features.md).
+Плашка + sheet на главной; в checkout — разбивка «Сумма блюд / Доставка / Итого».  
+API: `AppConfig`, `delivery_rules`, `user_prefs`, виджеты — [docs/architecture.md](docs/architecture.md#appconfig).  
+Подробно — [docs/features.md](docs/features.md).
 
 ---
 
@@ -74,10 +79,10 @@ python sync.py all     # всё сразу
 
 | Документ | Описание |
 |---|---|
-| [docs/roadmap.md](docs/roadmap.md) | Что сделано и что дальше |
+| [docs/roadmap.md](docs/roadmap.md) | Roadmap + **что критично до первого клиента** |
 | [docs/architecture.md](docs/architecture.md) | Структура проекта, стек, навигация, провайдеры |
 | [docs/design-system.md](docs/design-system.md) | Цвета, типографика, Premium Uzbek, компоненты |
-| [docs/features.md](docs/features.md) | Описание всех экранов |
+| [docs/features.md](docs/features.md) | Экраны, провайдеры меню, доставка, корзина |
 | [docs/data-models.md](docs/data-models.md) | Модели данных, схема БД, RLS |
 | [docs/supabase-setup.md](docs/supabase-setup.md) | Настройка Phone Auth / SMS-провайдера, CI secrets |
 | [docs/iiko-sync.md](docs/iiko-sync.md) | Синхронизация меню iiko, локальный запуск, GitHub Actions |
@@ -96,6 +101,15 @@ python sync.py all     # всё сразу
 | Orders | WhatsApp (`wa.me/77074007728`) |
 | CI/CD | GitHub Actions |
 | Fonts | Playfair Display + Inter |
+| E2E (dev) | [Patrol](https://patrol.leancode.co/) (`dev_dependencies`, см. `pubspec.yaml`) |
+
+### Smoke-тесты (Patrol)
+
+```bash
+patrol test --target integration_test/smoke_test.dart
+```
+
+Сценарии: splash («ПЛОВ НОМЕР 1»), три вкладки BottomNav, переход на «Бронь». Подробнее — [docs/architecture.md](docs/architecture.md#тестирование-patrol).
 
 ## MCP-стек (Claude Code)
 

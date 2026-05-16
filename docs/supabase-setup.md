@@ -98,6 +98,55 @@ supabase db push --project-ref dvmkxopjbwozgbckumdm --password $SUPABASE_DB_PASS
 
 ---
 
+## Push-уведомления (FCM)
+
+Firebase используется **только как транспорт** пушей; backend — Supabase.
+
+### 1. Firebase Console
+
+1. Создать проект Firebase
+2. Добавить Android-приложение `kz.plovxana.plovxana` → скачать `google-services.json` → заменить [`android/app/google-services.json`](../android/app/google-services.json) (сейчас placeholder)
+3. iOS: `GoogleService-Info.plist`, Push Notifications capability, APNs key в Firebase
+
+### 2. Миграция
+
+Применить [`supabase/migrations/20260516120000_push_tokens.sql`](../supabase/migrations/20260516120000_push_tokens.sql).
+
+### 3. Edge Function
+
+```bash
+supabase functions deploy send-order-push --no-verify-jwt
+```
+
+**Secrets (Dashboard → Edge Functions → Secrets):**
+
+| Secret | Значение |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | JSON service account Firebase (FCM HTTP v1) |
+| `SUPABASE_URL` | Project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key |
+
+### 4. Database Webhook
+
+Dashboard → **Database → Webhooks**:
+
+| Поле | Значение |
+|---|---|
+| Table | `orders` |
+| Events | `UPDATE` |
+| URL | `https://<ref>.supabase.co/functions/v1/send-order-push` |
+| Headers | `Authorization: Bearer <SERVICE_ROLE_KEY>` |
+
+Отправляется только при смене `status`: `pending→confirmed`, `confirmed→done`.
+
+### 5. Ручной чеклист
+
+1. Пользователь авторизован в приложении (токен в `push_tokens`)
+2. Оформить заказ → в Table Editor `orders.status = confirmed`
+3. На устройстве приходит пуш; тап → экран `/orders`
+
+---
+
 ## RLS-политики (задеплоены)
 
 | Таблица | Операция | Условие |
@@ -106,5 +155,6 @@ supabase db push --project-ref dvmkxopjbwozgbckumdm --password $SUPABASE_DB_PASS
 | `menu_items` | SELECT | все (публично) |
 | `promotions` | SELECT | все (публично) |
 | `orders` | INSERT / SELECT | `auth.uid() = user_id` |
+| `push_tokens` | INSERT / SELECT / UPDATE / DELETE | `auth.uid() = user_id` |
 | `reservations` | INSERT | все (гости тоже могут) |
 | `reservations` | SELECT | `auth.uid() = user_id OR user_id IS NULL` |

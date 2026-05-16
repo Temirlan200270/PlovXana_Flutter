@@ -337,10 +337,25 @@ IkatPatternBackground(
 
 ### Статус ресторана (`ShopStatusBadge`)
 
-- Открыто: точка `AppColors.halal`, подпись `AppColors.greyLight`
-- Закрыто / скоро закроется: `AppColors.error` / `AppColors.primary`
+**Файл:** [`shop_status_badge.dart`](../lib/features/menu/presentation/widgets/shop_status_badge.dart).  
+Часы — в [`AppConfig`](../lib/core/config/app_config.dart), логика — [`delivery_rules.dart`](../lib/core/config/delivery_rules.dart) (без хардкода в виджете).
+
+| Состояние | Функция | Точка / текст |
+|---|---|---|
+| Открыто | `isShopOpen()` | `halal` / `greyLight` |
+| Закроется скоро | `isClosingSoon()` (30 мин до `shopLastOrder`) | `primary` |
+| Закрыто | иначе | `error`, «Закрыто до 11:00» |
+
+### Баннеры checkout (`CheckoutScreen`)
+
+| Баннер | `AppColors` | Условие |
+|---|---|---|
+| Закрыт | `error` | `!isShopOpen()` → `shopClosedMessage()` |
+| Мин. сумма доставки | `primary` | `minOrderError(...) != null` |
 
 ### `DeliveryInfoBanner` / `DeliveryInfoSheet`
+
+**Файлы:** [`delivery_info_banner.dart`](../lib/shared/widgets/delivery_info_banner.dart), [`delivery_info_sheet.dart`](../lib/shared/widgets/delivery_info_sheet.dart).
 
 - Баннер: `surface`, рамка `accentBlue` @ 35%, иконка `local_shipping_outlined`
 - Текст краткий: `deliveryBannerSummary()` из [`delivery_rules.dart`](../lib/core/config/delivery_rules.dart)
@@ -349,8 +364,10 @@ IkatPatternBackground(
 
 ### `SplashScreen`
 
+**Файл:** [`lib/features/splash/presentation/splash_screen.dart`](../lib/features/splash/presentation/splash_screen.dart).
+
 - Фон `background`, `IkatPatternBackground`, заголовок `primary` (Playfair)
-- Анимация fade + scale ~1.2 с, задержка ~2 с → `/`
+- Анимация fade + scale **1200 ms**, переход на `/` через **2000 ms** после старта
 - Native launch: Android `launch_background` + iOS `LaunchScreen` — `#1A1A1A`
 
 ### SnackBar
