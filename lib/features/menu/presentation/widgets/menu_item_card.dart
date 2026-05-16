@@ -16,6 +16,7 @@ class MenuItemCard extends ConsumerWidget {
     final cart = ref.watch(cartProvider);
     final cartItem = cart.where((e) => e.item.id == item.id).firstOrNull;
     final inCart = cartItem != null;
+    final quantity = cartItem?.quantity ?? 0;
 
     return GestureDetector(
       onTap: () => context.push('/item/${item.id}', extra: item),
@@ -28,6 +29,7 @@ class MenuItemCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
+              flex: 3,
               child: Stack(
                 children: [
                   ClipRRect(
@@ -36,6 +38,7 @@ class MenuItemCard extends ConsumerWidget {
                         ? CachedNetworkImage(
                             imageUrl: item.imageUrl!,
                             width: double.infinity,
+                            height: double.infinity,
                             fit: BoxFit.cover,
                             errorWidget: (_, _, _) => _placeholder(),
                           )
@@ -51,70 +54,62 @@ class MenuItemCard extends ConsumerWidget {
                     Positioned(
                       top: 8,
                       right: 8,
-                      child: _badge('🌶', Colors.transparent),
+                      child: _badge('Острое', AppColors.spicy),
                     ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    item.name,
-                    style: const TextStyle(
-                      color: AppColors.cream,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 80),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      item.name,
+                      style: const TextStyle(
+                        color: AppColors.cream,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item.weightG != null ? '${item.weightG} г' : '',
-                    style: const TextStyle(color: AppColors.greyLight, fontSize: 10),
-                    maxLines: 1,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Flexible(
-                        child: Text(
-                          '${_formatPrice(item.price)} тг',
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      GestureDetector(
-                        onTap: () => ref.read(cartProvider.notifier).add(item),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: inCart ? AppColors.primary : AppColors.surfaceVariant,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            inCart ? Icons.check : Icons.add,
-                            size: 16,
-                            color: Colors.white,
+                    const SizedBox(height: 2),
+                    Text(
+                      item.weightG != null ? '${item.weightG} г' : '',
+                      style: const TextStyle(color: AppColors.greyLight, fontSize: 10),
+                      maxLines: 1,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            '${_formatPrice(item.price)} тг',
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 4),
+                        _CartControl(
+                          inCart: inCart,
+                          quantity: quantity,
+                          onAdd: () => ref.read(cartProvider.notifier).add(item),
+                          onRemove: () => ref.read(cartProvider.notifier).remove(item.id),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -126,8 +121,9 @@ class MenuItemCard extends ConsumerWidget {
   Widget _placeholder() {
     return Container(
       width: double.infinity,
+      height: double.infinity,
       color: AppColors.surfaceVariant,
-      child: const Icon(Icons.restaurant, color: AppColors.grey, size: 40),
+      child: const Icon(Icons.restaurant, color: AppColors.grey, size: 32),
     );
   }
 
@@ -138,7 +134,7 @@ class MenuItemCard extends ConsumerWidget {
         color: color.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 10)),
+      child: Text(text, style: const TextStyle(color: AppColors.cream, fontSize: 10)),
     );
   }
 
@@ -147,5 +143,81 @@ class MenuItemCard extends ConsumerWidget {
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (m) => '${m[1]} ',
         );
+  }
+}
+
+class _CartControl extends StatelessWidget {
+  final bool inCart;
+  final int quantity;
+  final VoidCallback onAdd;
+  final VoidCallback onRemove;
+
+  const _CartControl({
+    required this.inCart,
+    required this.quantity,
+    required this.onAdd,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!inCart) {
+      return GestureDetector(
+        onTap: onAdd,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: 28,
+          height: 28,
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceVariant,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.add, size: 16, color: AppColors.cream),
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () {},
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        height: 28,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _stepButton(Icons.remove, onRemove),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                '$quantity',
+                style: const TextStyle(
+                  color: AppColors.background,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            _stepButton(Icons.add, onAdd),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _stepButton(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 24,
+        height: 24,
+        child: Icon(icon, size: 16, color: AppColors.background),
+      ),
+    );
   }
 }

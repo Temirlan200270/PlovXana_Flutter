@@ -37,7 +37,8 @@ lib/
 │   │   ├── promotion.dart
 │   │   └── reservation.dart
 │   └── widgets/
-│       └── main_scaffold.dart         # BottomNavigationBar + FAB корзины
+│       ├── main_scaffold.dart         # BottomNavigationBar + FloatingCartBar
+│       └── floating_cart_bar.dart     # Плашка корзины (Wolt-style)
 └── features/
     ├── menu/
     │   ├── data/
@@ -50,7 +51,9 @@ lib/
     │       └── widgets/
     │           ├── category_chip.dart
     │           ├── menu_item_card.dart
-    │           └── promo_banner.dart
+    │           ├── menu_shimmer.dart
+    │           ├── promo_banner.dart
+    │           └── shop_status_badge.dart
     ├── cart/
     │   ├── data/
     │   │   └── cart_provider.dart     # StateNotifierProvider (in-memory)
@@ -73,7 +76,7 @@ lib/
 ## Схема навигации
 
 ```
-ShellRoute (MainScaffold — BottomNav + FAB)
+ShellRoute (MainScaffold — BottomNav + FloatingCartBar)
 ├── /                    HomeScreen
 ├── /category/:id        CategoryScreen
 └── /reservation         ReservationScreen
@@ -86,7 +89,10 @@ ShellRoute (MainScaffold — BottomNav + FAB)
 └── /auth                AuthScreen
 ```
 
-`MainScaffold` показывается только на трёх основных вкладках. При переходе на `/cart`, `/checkout`, `/auth` — обычный `Scaffold` без нижней навигации.
+`MainScaffold` оборачивает ShellRoute (`/`, `/category/:id`, `/reservation`).  
+`FloatingCartBar` внутри scaffold — только на этих маршрутах.
+
+При переходе на `/cart`, `/checkout`, `/auth`, `/item/:id` — отдельный `Scaffold` без нижней навигации и без плашки корзины.
 
 ---
 
@@ -95,7 +101,7 @@ ShellRoute (MainScaffold — BottomNav + FAB)
 ```
 HomeScreen / CategoryScreen
     ↓  (добавить в корзину)
-CartScreen  ← FAB на MainScaffold
+CartScreen  ← FloatingCartBar на MainScaffold
     ↓
 CheckoutScreen
     ├── не авторизован → /auth → OTP → вернуться

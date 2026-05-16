@@ -90,7 +90,7 @@ CachedNetworkImage(
 3. Поверх него нет другого виджета? (используй Flutter Inspector через Marionette tree)
 4. `IgnorePointer` / `AbsorbPointer` в родителях?
 
-### BottomNav / FAB перекрывают контент
+### BottomNav / FloatingCartBar перекрывают контент
 
 **Фикс:**
 ```dart

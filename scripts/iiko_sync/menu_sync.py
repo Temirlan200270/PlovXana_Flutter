@@ -189,7 +189,16 @@ async def _async_sync_menu(
     raw_products = [p for p in (nomenclature.get("products") or []) if isinstance(p, dict)]
     products = _dedupe_products(raw_products)
 
-    created = updated = skip_no_id = skip_deleted = skip_type = skip_no_name = skip_no_category = 0
+    existing_images_res = (
+        supabase.table("menu_items").select("iiko_id, image_url").execute()
+    )
+    existing_images: dict[str, str] = {
+        row["iiko_id"]: row["image_url"]
+        for row in existing_images_res.data
+        if row.get("iiko_id") and row.get("image_url")
+    }
+
+    skip_no_id = skip_deleted = skip_type = skip_no_name = skip_no_category = 0
     rows_to_upsert: list[dict[str, Any]] = []
 
     for product in products:
@@ -218,6 +227,9 @@ async def _async_sync_menu(
 
         image_links = product.get("imageLinks") or []
         weight_raw = product.get("weight") or product.get("weightGrams")
+        current_image = (
+            image_links[0] if image_links else existing_images.get(sid)
+        )
 
         rows_to_upsert.append({
             "iiko_id": sid,
@@ -225,7 +237,7 @@ async def _async_sync_menu(
             "name": name,
             "description": (product.get("description") or "").strip() or None,
             "price": _extract_price(product),
-            "image_url": image_links[0] if image_links else None,
+            "image_url": current_image,
             "weight_g": int(float(weight_raw) * 1000) if weight_raw and float(weight_raw) < 100 else (int(weight_raw) if weight_raw else None),
             "is_available": True,
             "is_halal": True,

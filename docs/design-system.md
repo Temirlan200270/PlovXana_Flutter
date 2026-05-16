@@ -123,7 +123,7 @@ EdgeInsets.fromLTRB(20, 16, 20, 18),      // ❌ 18 не в шкале
 16  карточки контента, большие кнопки
 20  модальные окна, sheet'ы
 24  hero-карточки
-full StadiumBorder() для bottom navigation FAB
+16  FloatingCartBar (плашка корзины над BottomNav)
 ```
 
 Использование:
@@ -208,6 +208,36 @@ TextField(
 ```
 
 Базовое оформление inputs — в `AppTheme.dark` (InputDecorationTheme). Не переопределяй `border`, `fillColor` inline.
+
+### FloatingCartBar (корзина)
+
+Плашка в стиле Wolt/Яндекс.Еда — **над** `BottomNavigationBar`, в `MainScaffold`.
+
+- Появляется при `cartCount > 0` (`AnimatedSize`, 300ms, `Curves.easeOutBack`)
+- Фон: `AppColors.primary`, текст и иконки: `AppColors.background`
+- Слева: badge с количеством; центр: `Корзина · N блюд/блюда`; справа: сумма + стрелка
+- Тап → `/cart`
+- Виджет: [`lib/shared/widgets/floating_cart_bar.dart`](../lib/shared/widgets/floating_cart_bar.dart)
+
+**Не использовать** круглый FAB для корзины — перекрывает карточки меню.
+
+### Карточка блюда (`MenuItemCard`)
+
+- Фото: `Expanded(flex: 3)`, плейсхолдер `Icons.restaurant`
+- Текстовый блок: `ConstrainedBox(minHeight: 80)` — название, вес, цена
+- Пустая корзина: круглая кнопка `+` (`AppColors.surfaceVariant`)
+- В корзине: компактный stepper `[ − qty + ]` на `AppColors.primary`, текст `AppColors.background`
+- Tap по карточке → деталь; tap по stepper не открывает деталь (`HitTestBehavior.opaque`)
+
+### Категория (`CategoryChip`)
+
+- Ширина чипа: **96**, иконка 64×64
+- Название: `maxLines: 2`, `TextOverflow.ellipsis`, `textAlign: center`
+
+### Статус ресторана (`ShopStatusBadge`)
+
+- Открыто: точка `AppColors.halal`, подпись `AppColors.greyLight`
+- Закрыто / скоро закроется: `AppColors.error` / `AppColors.primary`
 
 ### SnackBar
 
@@ -323,6 +353,18 @@ Scaffold(
 - **Деньги** — всегда в тенге, с разделителем тысяч: `5 000 тг` (пробел между тысячами, "тг" в нижнем регистре).
 - **Время** — `13:00`, не `13:00:00` и не `1 PM`.
 - **Дата** — `20 мая, среда` для отображения, `dd.MM.yyyy` для технических полей.
+
+---
+
+## 📱 Навигация и корзина
+
+| Элемент | Поведение |
+|---|---|
+| `BottomNavigationBar` | Вкладки «Меню» (`/`) и «Бронь» (`/reservation`) |
+| `FloatingCartBar` | Над нижним меню; видна только при `cartCount > 0` |
+| CTA на формах | `bottomNavigationBar: SafeArea` — не `floatingActionButton` |
+
+Подробнее по экранам → [features.md](features.md).
 
 ---
 

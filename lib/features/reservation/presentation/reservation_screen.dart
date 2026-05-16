@@ -201,9 +201,9 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
             TextField(
               controller: _nameCtrl,
               style: const TextStyle(color: AppColors.cream),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Ваше имя',
-                prefixIcon: Icon(Icons.person_outline, color: AppColors.primary),
+                prefixIcon: _fieldPrefixIcon(Icons.person_outline),
               ),
             ),
             const SizedBox(height: 12),
@@ -211,11 +211,11 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
               controller: _phoneCtrl,
               keyboardType: TextInputType.phone,
               style: const TextStyle(color: AppColors.cream),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '777 000 00 00',
                 prefixText: '+7 ',
-                prefixStyle: TextStyle(color: AppColors.cream),
-                prefixIcon: Icon(Icons.phone_outlined, color: AppColors.primary),
+                prefixStyle: const TextStyle(color: AppColors.cream),
+                prefixIcon: _fieldPrefixIcon(Icons.phone_outlined),
               ),
             ),
             const SizedBox(height: 12),
@@ -228,17 +228,30 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: _loading ? null : _sendReservation,
-              icon: _loading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child:
-                          CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                  : const Icon(Icons.send, size: 18),
-              label: const Text('Отправить бронь в WhatsApp'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _sendReservation,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_loading)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          color: AppColors.onPrimary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    else
+                      const Icon(Icons.send, size: 18),
+                    const SizedBox(width: 8),
+                    const Text('Отправить бронь в WhatsApp'),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             const Center(
@@ -251,6 +264,13 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _fieldPrefixIcon(IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 12),
+      child: Icon(icon, color: AppColors.primary, size: 22),
     );
   }
 

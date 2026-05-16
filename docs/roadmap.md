@@ -11,7 +11,9 @@
 - [x] Claude Skills: flutter-architecture, riverpod-patterns, ui-screen-generator, api-integration, debug-ui, ui-test-loop
 - [x] Design system документ
 - [x] `.env` заполнен, `.env.example` создан, секреты в `.gitignore`
-- [x] Документация: architecture, features, data-models, design-system, supabase-setup
+- [x] Документация: architecture, features, data-models, design-system, supabase-setup, iiko-sync
+- [x] `menu_sync.py`: сохранение ручных `image_url` при пустом iiko
+- [x] UI MVP: `FloatingCartBar`, stepper в `MenuItemCard`, правки категорий/статуса/брони
 
 ---
 
@@ -20,13 +22,13 @@
 > Цель: запустить приложение в ресторане
 
 - [ ] Запустить `python sync.py all` — залить меню из iiko в Supabase
-- [ ] Загрузить фотографии блюд → Supabase Storage (`menu` bucket) + обновить `image_url`
+- [ ] Загрузить фотографии блюд → Supabase Storage (`menu` bucket) + обновить `image_url` (sync не затирает ручные URL — см. [iiko-sync.md](iiko-sync.md#фотографии-блюд-image_url))
 - [ ] Настроить Phone Auth — Twilio (SMS-провайдер в Supabase Dashboard)
 - [ ] Тест на реальном устройстве Android
 - [ ] Тест на реальном устройстве iOS
 - [ ] `flutter build apk --release` → установить APK, проверить вживую
 - [ ] Исправить баги после ручного тестирования
-- [ ] Добавить GitHub Secrets (`IIKO_API_LOGIN`, `SUPABASE_SERVICE_ROLE_KEY` и др.) для CI
+- [ ] Добавить GitHub Secrets для CI — см. [iiko-sync.md](iiko-sync.md#secrets-обязательно) и [supabase-setup.md](supabase-setup.md#github-actions-cicd)
 
 ---
 
