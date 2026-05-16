@@ -5,6 +5,7 @@ import '../../../shared/models/menu_item.dart';
 import '../../../shared/models/promotion.dart';
 
 final supabaseProvider = Provider<SupabaseClient>((_) => Supabase.instance.client);
+final signOutProvider = Provider((_) => () => Supabase.instance.client.auth.signOut());
 
 final categoriesProvider = FutureProvider<List<Category>>((ref) async {
   final client = ref.read(supabaseProvider);

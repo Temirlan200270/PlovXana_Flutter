@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/config/delivery_rules.dart';
 import '../../../core/config/user_prefs.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../cart/data/cart_provider.dart';
@@ -77,17 +78,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     setState(() => _loading = true);
 
     final cart = ref.read(cartProvider);
-    final total = ref.read(cartTotalProvider);
+    final subtotal = ref.read(cartTotalProvider);
+    final isDelivery = delivery == DeliveryType.delivery;
+    final fee = deliveryFeeForSubtotal(subtotal, isDelivery: isDelivery);
+    final grandTotal = orderGrandTotal(subtotal, fee);
     final now = DateFormat('HH:mm').format(DateTime.now());
 
     final lines = cart.map((ci) {
       final price = ci.item.price * ci.quantity;
-      return '- ${ci.item.name} x${ci.quantity} — ${_fmt(price)} тг';
+      return '- ${ci.item.name} x${ci.quantity} — ${formatTenge(price)} тг';
     }).join('\n');
 
-    final deliveryLabel =
-        delivery == DeliveryType.delivery ? 'Доставка' : 'Самовывоз';
-    final addressLine = delivery == DeliveryType.delivery && address.isNotEmpty
+    final deliveryLabel = isDelivery ? 'Доставка' : 'Самовывоз';
+    final deliveryFeeLine = isDelivery
+        ? '\n🚚 Доставка: ${deliveryFeeShortLabel(subtotal, isDelivery: true)}'
+        : '';
+    final addressLine = isDelivery && address.isNotEmpty
         ? '\n📍 Адрес: $address'
         : '';
     final commentLine = _commentCtrl.text.trim().isNotEmpty
@@ -99,7 +105,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 📋 Состав:
 $lines
 
-💰 Итого: ${_fmt(total)} тг
+🍽 Сумма блюд: ${formatTenge(subtotal)} тг$deliveryFeeLine
+💰 Итого: ${formatTenge(grandTotal)} тг
 🚗 $deliveryLabel
 💵 Оплата: Наличные / Kaspi перевод$addressLine
 👤 Имя: ${name.isEmpty ? 'не указано' : name}
@@ -119,7 +126,7 @@ $lines
                   'quantity': ci.quantity,
                 })
             .toList(),
-        'total': total,
+        'total': grandTotal,
         'delivery_type': delivery.name,
         'address': address,
         'phone': '+7$phone',
@@ -156,7 +163,10 @@ $lines
   @override
   Widget build(BuildContext context) {
     final delivery = ref.watch(_deliveryTypeProvider);
-    final total = ref.watch(cartTotalProvider);
+    final subtotal = ref.watch(cartTotalProvider);
+    final isDelivery = delivery == DeliveryType.delivery;
+    final fee = deliveryFeeForSubtotal(subtotal, isDelivery: isDelivery);
+    final grandTotal = orderGrandTotal(subtotal, fee);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Оформление заказа')),
@@ -245,13 +255,22 @@ $lines
                 color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  const Text('Итого', style: TextStyle(color: AppColors.greyLight, fontSize: 16)),
-                  Text(
-                    '${_fmt(total)} тг',
-                    style: const TextStyle(
+                  _totalRow('Сумма блюд', '${formatTenge(subtotal)} тг'),
+                  const SizedBox(height: 8),
+                  _totalRow(
+                    'Доставка',
+                    deliveryFeeShortLabel(subtotal, isDelivery: isDelivery),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Divider(color: AppColors.divider, height: 1),
+                  ),
+                  _totalRow(
+                    'Итого',
+                    '${formatTenge(grandTotal)} тг',
+                    valueStyle: const TextStyle(
                       color: AppColors.primary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -267,7 +286,10 @@ $lines
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        color: AppColors.onPrimary,
+                        strokeWidth: 2,
+                      ),
                     )
                   : const Icon(Icons.send, size: 18),
               label: const Text('Отправить заказ в WhatsApp'),
@@ -283,6 +305,20 @@ $lines
           ],
         ),
       ),
+    );
+  }
+
+  Widget _totalRow(String label, String value, {TextStyle? valueStyle}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: const TextStyle(color: AppColors.greyLight, fontSize: 14)),
+        Text(
+          value,
+          style: valueStyle ??
+              const TextStyle(color: AppColors.cream, fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+      ],
     );
   }
 
@@ -327,10 +363,4 @@ $lines
     );
   }
 
-  String _fmt(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]} ',
-        );
-  }
 }

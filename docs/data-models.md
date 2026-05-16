@@ -133,7 +133,7 @@ class Promotion extends Equatable {
 | `user_id` | uuid (FK)? | → `auth.users.id` |
 | `status` | text | `pending` / `confirmed` / `done` |
 | `items_json` | jsonb | `[{item_id, name, price, quantity}]` |
-| `total` | integer | Сумма в тенге |
+| `total` | integer | Итог в тенге: сумма блюд + доставка (см. `delivery_rules.dart`) |
 | `delivery_type` | text | `delivery` / `pickup` |
 | `address` | text? | Адрес доставки |
 | `phone` | text? | Телефон клиента |
@@ -207,7 +207,7 @@ client.from('orders').insert({
   'user_id': user.id,
   'status': 'pending',
   'items_json': [...],
-  'total': total,
+  'total': grandTotal, // блюда + deliveryFee
   'delivery_type': 'delivery',
   'address': address,
   'phone': phone,

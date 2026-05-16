@@ -1,12 +1,23 @@
 # Описание экранов и функций
 
+## Splash (`SplashScreen`)
+
+**Маршрут:** `/splash` (стартовый)
+
+- Тёмный фон `AppColors.background`, `IkatPatternBackground`
+- Заголовок «ПЛОВ НОМЕР 1» (золото), fade + scale ~2 с → `context.go('/')`
+- Native splash Android/iOS: фон `#1A1A1A`
+
+---
+
 ## Главный экран (`HomeScreen`)
 
 **Маршрут:** `/`
 
-- **AppBar:** «ПЛОВ НОМЕР 1» (Playfair), `ShopStatusBadge`, выход и «О ресторане»
+- **AppBar:** «ПЛОВ НОМЕР 1» (Playfair), `ShopStatusBadge`, доставка (sheet), выход и «О ресторане»
 - **Поиск:** `IkatPatternBackground` + поле; `searchQueryProvider` → `searchResultsProvider`
 - **Акции:** `PromoBanner` — арочные углы 24/16, fallback с лазурной полосой `accentBlue`
+- **Доставка:** `DeliveryInfoBanner` под акциями → `DeliveryInfoSheet` (700 тг, бесплатно от 10 000 тг, Павлодар, 45–75 мин)
 - **Категории:** `CategoryChip` (96×80, арка, рамка `accentBlue`, иконка по типу кухни) → `/category/:id`
 - **Популярное / Новинки:** `MenuItemCard` — казан-заглушка, stepper `[ − qty + ]`
 - **Состояния:** `MenuShimmer` при загрузке, пустой поиск — «Ничего не найдено»
@@ -17,7 +28,7 @@
 
 ## Экран категории (`CategoryScreen`)
 
-**Маршрут:** `/category/:id` (объект `Category` в `extra`)
+**Маршрут:** `/category/:id?name=Название` — заголовок AppBar из query-параметра `name`
 
 - Сетка блюд категории (`menuItemsByCategoryProvider`)
 - Только `is_available = true`
@@ -48,7 +59,7 @@
 **Содержимое:**
 
 - Список позиций: `+` / `−` / удалить
-- Итоговая сумма
+- Кнопка «Оформить · X тг» — сумма **блюд** (`cartTotalProvider`), без доставки
 - «Оформить заказ» → `/checkout`
 - Пустая корзина — `IkatPatternBackground`, `DishImagePlaceholder`, CTA «В меню»
 - Миниатюры без фото — `DishImagePlaceholder` 88×88
@@ -71,10 +82,22 @@
 | Телефон | Да | Префикс +7, 10 цифр |
 | Комментарий | Нет | Пожелания, аллергии |
 
+### Сумма заказа
+
+Константы в [`app_config.dart`](../lib/core/config/app_config.dart), расчёт в [`delivery_rules.dart`](../lib/core/config/delivery_rules.dart):
+
+| Условие | Доставка |
+|---|---|
+| Самовывоз | 0 тг |
+| Доставка, сумма блюд ≥ 10 000 тг | Бесплатно |
+| Доставка, сумма блюд &lt; 10 000 тг | 700 тг |
+
+UI: «Сумма блюд» + «Доставка» + «Итого». `FloatingCartBar` показывает только сумму блюд.
+
 ### Логика отправки
 
 1. Если пользователь не авторизован — редирект на `/auth`
-2. Запись заказа в таблицу `orders` (Supabase)
+2. Запись заказа в таблицу `orders` (Supabase), `total` = итог с доставкой
 3. Открытие WhatsApp с готовым сообщением на номер `+7 707 400 77 28`
 4. Очистка корзины → переход на `/order-sent`
 
@@ -89,7 +112,9 @@
 - Плов классический x2 — 5 000 тг
 - Шашлык из баранины x1 — 4 500 тг
 
-💰 Итого: 9 500 тг
+🍽 Сумма блюд: 9 500 тг
+🚚 Доставка: 700 тг
+💰 Итого: 10 200 тг
 🚗 Доставка
 💵 Оплата: Наличные / Kaspi перевод
 📍 Адрес: ул. Абая 10, кв 5
@@ -98,6 +123,8 @@
 
 ⏰ 14:32
 ```
+
+Строка `🚚 Доставка:` — только при типе «Доставка» (`Бесплатно` или `700 тг`). При самовывозе — без неё.
 
 ---
 
@@ -174,7 +201,7 @@ SMS-провайдер: [supabase-setup.md](supabase-setup.md).
 
 ## MainScaffold (общая оболочка)
 
-**Файлы:** `main_scaffold.dart`, `floating_cart_bar.dart`, `dish_image_placeholder.dart`, `ikat_pattern_background.dart`
+**Файлы:** `main_scaffold.dart`, `floating_cart_bar.dart`, `dish_image_placeholder.dart`, `ikat_pattern_background.dart`, `delivery_info_banner.dart`, `delivery_info_sheet.dart`
 
 ### BottomNavigationBar
 
@@ -191,6 +218,16 @@ SMS-провайдер: [supabase-setup.md](supabase-setup.md).
 | `cartCount > 0` | Золотая плашка: badge, «Корзина · N блюд», сумма в тг, стрелка |
 | Тап | `context.push('/cart')` |
 
-**Провайдеры:** `cartCountProvider`, `cartTotalProvider` ([`cart_provider.dart`](../lib/features/cart/data/cart_provider.dart)).
+**Провайдеры:** `cartCountProvider`, `cartTotalProvider` ([`cart_provider.dart`](../lib/features/cart/data/cart_provider.dart)). Сумма на плашке — только блюда.
 
-Маршруты `/cart`, `/checkout`, `/auth`, `/item/:id` — **вне** ShellRoute, без нижнего меню и без плашки.
+### Условия доставки (UI)
+
+| Компонент | Файл | Действие |
+|---|---|---|
+| `DeliveryInfoBanner` | `delivery_info_banner.dart` | Плашка под акциями на главной |
+| `showDeliveryInfoSheet` | `delivery_info_sheet.dart` | Bottom sheet с полными условиями |
+| AppBar (главная) | `home_screen.dart` | Иконка доставки → тот же sheet |
+
+Тексты баннера генерируются в `deliveryBannerSummary()` из `AppConfig`.
+
+Маршруты `/splash`, `/cart`, `/checkout`, `/auth`, `/item/:id` — **вне** ShellRoute (без нижнего меню; `/splash` и checkout — без FloatingCartBar).

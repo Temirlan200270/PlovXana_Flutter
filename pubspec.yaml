@@ -40,6 +40,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   marionette_mcp: ^0.3.0
+  patrol: any
 
 flutter:
   uses-material-design: true
@@ -47,3 +48,10 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+
+patrol:
+  app_name: ПЛОВ НОМЕР 1
+  android:
+    package_name: kz.plovxana.plovxana
+  ios:
+    bundle_id: kz.plovxana.plovxana

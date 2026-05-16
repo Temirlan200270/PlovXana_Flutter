@@ -15,6 +15,8 @@
 - [x] `menu_sync.py`: сохранение ручных `image_url` при пустом iiko
 - [x] UI MVP: `FloatingCartBar`, stepper в `MenuItemCard`, правки категорий/статуса/брони
 - [x] Premium Uzbek v1: `accentBlue`/`accentTerracotta`, `DishImagePlaceholder`, `IkatPatternBackground`, арки на категориях и промо
+- [x] Splash Screen + тёмный native launch
+- [x] Условия доставки (Павлодар, 700 / 10 000 тг, 45–75 мин) + расчёт в checkout
 
 ---
 
@@ -39,7 +41,8 @@
 
 - [ ] SVG-плейсхолдер казана в `assets/` (вместо Material-иконки)
 - [ ] (Опционально) Display-шрифт с восточной вязью для «ПЛОВ НОМЕР 1»
-- [ ] (Опционально) Расширить `IkatPatternBackground` на splash / hero-блоки
+- [x] `IkatPatternBackground` на `SplashScreen`
+- [ ] (Опционально) Расширить икат на hero-блоки каталога
 
 ---
 
@@ -47,6 +50,8 @@
 
 > Цель: первые реальные заказы
 
+- [ ] Модификаторы / допродажа (лепешка, салат к плову) — cross-sell
+- [ ] Вкладка «Профиль»: история заказов, данные, выход
 - [ ] Раздать APK сотрудникам ресторана для теста
 - [ ] Добавить акции (`promotions`) — баннеры на главной
 - [ ] Экран "О ресторане" — адрес, часы работы, телефон

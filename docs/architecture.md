@@ -22,13 +22,17 @@
 lib/
 ├── main.dart                          # Точка входа: Supabase.init, ProviderScope, GoRouter
 ├── core/
+│   ├── config/
+│   │   ├── app_config.dart            # WhatsApp, доставка (Павлодар)
+│   │   ├── delivery_rules.dart        # Расчёт fee, formatTenge, тексты баннера
+│   │   └── user_prefs.dart            # Локальное имя/телефон
 │   ├── theme/
 │   │   ├── app_colors.dart            # Цветовая палитра (константы)
 │   │   └── app_theme.dart             # ThemeData (dark theme)
 │   ├── router/
-│   │   └── app_router.dart            # GoRouter: все маршруты
+│   │   └── app_router.dart            # GoRouter: initialLocation /splash
 │   └── supabase/
-│       └── supabase_config.dart       # URL + anonKey (заполнить!)
+│       └── supabase_config.dart       # URL + anonKey
 ├── shared/
 │   ├── models/                        # Dart-модели (Equatable)
 │   │   ├── category.dart
@@ -40,7 +44,9 @@ lib/
 │       ├── main_scaffold.dart         # BottomNavigationBar + FloatingCartBar
 │       ├── floating_cart_bar.dart     # Плашка корзины (Wolt-style)
 │       ├── dish_image_placeholder.dart
-│       └── ikat_pattern_background.dart
+│       ├── ikat_pattern_background.dart
+│       ├── delivery_info_banner.dart
+│       └── delivery_info_sheet.dart
 └── features/
     ├── menu/
     │   ├── data/
@@ -68,9 +74,12 @@ lib/
     ├── auth/
     │   └── presentation/
     │       └── auth_screen.dart       # Phone OTP через Supabase
-    └── reservation/
+    ├── reservation/
+    │   └── presentation/
+    │       └── reservation_screen.dart # Датапикер + запись в reservations + WhatsApp
+    └── splash/
         └── presentation/
-            └── reservation_screen.dart # Датапикер + запись в reservations + WhatsApp
+            └── splash_screen.dart      # Стартовый экран → /
 ```
 
 ---
@@ -78,12 +87,15 @@ lib/
 ## Схема навигации
 
 ```
+/splash                SplashScreen (initial)
+
 ShellRoute (MainScaffold — BottomNav + FloatingCartBar)
 ├── /                    HomeScreen
 ├── /category/:id        CategoryScreen
 └── /reservation         ReservationScreen
 
-Вне ShellRoute (без BottomNav):
+Вне ShellRoute (без BottomNav и FloatingCartBar):
+├── /splash              SplashScreen (только initial)
 ├── /item/:id            ItemDetailScreen
 ├── /cart                CartScreen
 ├── /checkout            CheckoutScreen
@@ -101,18 +113,34 @@ ShellRoute (MainScaffold — BottomNav + FloatingCartBar)
 ## Поток оформления заказа
 
 ```
-HomeScreen / CategoryScreen
-    ↓  (добавить в корзину)
-CartScreen  ← FloatingCartBar на MainScaffold
+SplashScreen (~2 с)
     ↓
-CheckoutScreen
+HomeScreen / CategoryScreen
+    ↓  (+ в MenuItemCard → FloatingCartBar: сумма блюд)
+CartScreen  (кнопка «Оформить» — тоже сумма блюд)
+    ↓
+CheckoutScreen  (доставка 700 / бесплатно от 10 000 / самовывоз 0)
     ├── не авторизован → /auth → OTP → вернуться
     └── авторизован →
-        ├── INSERT в таблицу orders (Supabase)
-        └── открыть WhatsApp (wa.me/77074007728)
+        ├── INSERT orders (total = блюда + доставка)
+        └── WhatsApp (wa.me из AppConfig)
             ↓
         OrderSentScreen
 ```
+
+---
+
+## Конфигурация доставки
+
+| Константа (`AppConfig`) | Значение |
+|---|---|
+| `deliveryFee` | 700 тг |
+| `freeDeliveryThreshold` | 10 000 тг |
+| `deliveryEtaMinMinutes` / `Max` | 45–75 мин |
+| `deliveryCity` | Павлодар |
+| `deliveryPhoneDisplay` | +7 707 400 77 28 |
+
+Логика: [`delivery_rules.dart`](../lib/core/config/delivery_rules.dart) — `deliveryFeeForSubtotal`, `orderGrandTotal`, `deliveryBannerSummary`.
 
 ---
 
@@ -142,8 +170,8 @@ CheckoutScreen
 | Provider | Тип | Что хранит |
 |---|---|---|
 | `cartProvider` | `StateNotifierProvider` | `List<CartItem>` (in-memory) |
-| `cartTotalProvider` | `Provider` | Сумма корзины в тенге |
-| `cartCountProvider` | `Provider` | Количество позиций |
+| `cartTotalProvider` | `Provider` | Сумма **блюд** в тенге (без доставки) |
+| `cartCountProvider` | `Provider` | Количество позиций (шт.) |
 | `categoriesProvider` | `FutureProvider` | Список категорий из Supabase |
 | `menuItemsByCategoryProvider` | `FutureProvider.family` | Блюда по `categoryId` |
 | `popularItemsProvider` | `FutureProvider` | Популярные блюда (главная) |

@@ -44,7 +44,7 @@
 
 Виджет [`IkatPatternBackground`](../lib/shared/widgets/ikat_pattern_background.dart) — `CustomPainter`, ромбы, `accentBlue` @ **4%** opacity.
 
-**Подключено:** блок поиска на `HomeScreen`, пустое состояние `CartScreen`.
+**Подключено:** `SplashScreen`, блок поиска на `HomeScreen`, пустое состояние `CartScreen`.
 
 **Не использовать** под плотным текстом форм. Один стиль паттерна на весь проект.
 
@@ -78,7 +78,9 @@
 |---|---|---|
 | `accentBlue`, `accentTerracotta` | ✅ | `app_colors.dart` |
 | Плейсхолдер казан | ✅ | `DishImagePlaceholder` → карточки, корзина, деталь |
-| Паттерн икат (~4% opacity) | ✅ | `IkatPatternBackground` → поиск, пустая корзина |
+| Паттерн икат (~4% opacity) | ✅ | `IkatPatternBackground` → splash, поиск, пустая корзина |
+| Splash Screen | ✅ | `SplashScreen` + native `#1A1A1A` |
+| Условия доставки | ✅ | `DeliveryInfoBanner` + `DeliveryInfoSheet` |
 | Арки 24/16 | ✅ | `CategoryChip`, `PromoBanner` |
 | Display-шрифт заголовка | ⏳ | Playfair в AppBar — опционально позже |
 
@@ -337,6 +339,19 @@ IkatPatternBackground(
 
 - Открыто: точка `AppColors.halal`, подпись `AppColors.greyLight`
 - Закрыто / скоро закроется: `AppColors.error` / `AppColors.primary`
+
+### `DeliveryInfoBanner` / `DeliveryInfoSheet`
+
+- Баннер: `surface`, рамка `accentBlue` @ 35%, иконка `local_shipping_outlined`
+- Текст краткий: `deliveryBannerSummary()` из [`delivery_rules.dart`](../lib/core/config/delivery_rules.dart)
+- Sheet: полные условия (цена, порог, зона, время, телефон, оплата)
+- Вызов: `showDeliveryInfoSheet(context)`
+
+### `SplashScreen`
+
+- Фон `background`, `IkatPatternBackground`, заголовок `primary` (Playfair)
+- Анимация fade + scale ~1.2 с, задержка ~2 с → `/`
+- Native launch: Android `launch_background` + iOS `LaunchScreen` — `#1A1A1A`
 
 ### SnackBar
 

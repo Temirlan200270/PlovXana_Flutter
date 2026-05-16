@@ -7,12 +7,14 @@ import '../../features/checkout/presentation/checkout_screen.dart';
 import '../../features/checkout/presentation/order_sent_screen.dart';
 import '../../features/auth/presentation/auth_screen.dart';
 import '../../features/reservation/presentation/reservation_screen.dart';
+import '../../features/splash/presentation/splash_screen.dart';
 import '../../shared/widgets/main_scaffold.dart';
 import '../../shared/models/menu_item.dart';
 
 final router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   routes: [
+    GoRoute(path: '/splash', builder: (c, s) => const SplashScreen()),
     ShellRoute(
       builder: (context, state, child) => MainScaffold(child: child),
       routes: [

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/menu_providers.dart';
 import '../widgets/category_chip.dart';
 import '../widgets/menu_item_card.dart';
+import '../../../../shared/models/menu_item.dart';
 import '../widgets/menu_shimmer.dart';
 import '../widgets/promo_banner.dart';
 import '../widgets/shop_status_badge.dart';
+import '../../../../shared/widgets/delivery_info_banner.dart';
+import '../../../../shared/widgets/delivery_info_sheet.dart';
 import '../../../../shared/widgets/ikat_pattern_background.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -48,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverAppBar(
             floating: true,
             snap: true,
-            expandedHeight: 70,
+            expandedHeight: 72,
             title: Row(
               children: [
                 Expanded(
@@ -66,6 +68,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.local_shipping_outlined, color: AppColors.cream),
+                onPressed: () => showDeliveryInfoSheet(context),
+              ),
               IconButton(
                 icon: const Icon(Icons.logout, color: AppColors.error, size: 20),
                 onPressed: () => _showLogoutConfirm(context),
@@ -117,6 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 error: (_, _) => const SizedBox.shrink(),
               ),
             ),
+            const SliverToBoxAdapter(child: DeliveryInfoBanner()),
             _buildSectionTitle('Категории'),
             SliverToBoxAdapter(
               child: categoriesAsync.when(
@@ -130,8 +137,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     itemBuilder: (_, i) => CategoryChip(
                       category: cats[i],
                       onTap: () => context.push(
-                        '/category/${cats[i].id}',
-                        extra: cats[i],
+                        '/category/${cats[i].id}?name=${Uri.encodeComponent(cats[i].name)}',
                       ),
                     ),
                   ),
@@ -140,10 +146,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 error: (_, _) => const SizedBox.shrink(),
               ),
             ),
-            _buildSectionTitle('Популярное'),
-            _buildTwoRowHorizontalMenu(popularAsync),
-            _buildSectionTitle('Новинки'),
-            _buildTwoRowHorizontalMenu(newItemsAsync),
+            _buildSection('Популярное', popularAsync),
+            _buildSection('Новинки', newItemsAsync),
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ],
@@ -163,13 +167,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildTwoRowHorizontalMenu(AsyncValue<List<dynamic>> asyncData) {
-    return SliverToBoxAdapter(
-      child: asyncData.when(
-        data: (items) => items.isEmpty
-            ? const SizedBox.shrink()
-            : SizedBox(
-                height: 480, // Увеличено с 440
+  Widget _buildSection(String title, AsyncValue<List<MenuItem>> asyncData) {
+    return asyncData.when(
+      data: (items) {
+        if (items.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+        return SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 480,
                 child: GridView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -177,15 +189,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 12,
                     crossAxisSpacing: 12,
-                    childAspectRatio: 1.25, // Скорректировано
+                    childAspectRatio: 1.25,
                   ),
                   itemCount: items.length,
                   itemBuilder: (_, i) => MenuItemCard(item: items[i]),
                 ),
               ),
-        loading: () => const SizedBox.shrink(),
-        error: (_, _) => const SizedBox.shrink(),
-      ),
+            ),
+          ],
+        );
+      },
+      loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }
 
@@ -195,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ? const SliverToBoxAdapter(
               child: Center(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 40),
+                  padding: EdgeInsets.only(top: 48),
                   child: Text('Ничего не найдено',
                       style: TextStyle(color: AppColors.grey)),
                 ),
@@ -244,7 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () async {
               final nav = Navigator.of(ctx);
               final sm = ScaffoldMessenger.of(context);
-              await Supabase.instance.client.auth.signOut();
+              await ref.read(signOutProvider)();
               if (mounted) {
                 nav.pop();
                 sm.showSnackBar(
