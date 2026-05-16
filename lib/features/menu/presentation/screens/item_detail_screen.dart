@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/menu_item.dart';
+import '../../../../shared/widgets/dish_image_placeholder.dart';
 import '../../../cart/data/cart_provider.dart';
 
 class ItemDetailScreen extends ConsumerWidget {
@@ -124,7 +125,7 @@ class ItemDetailScreen extends ConsumerWidget {
   }
 
   Widget _placeholder() {
-    return Container(color: AppColors.surfaceVariant);
+    return const DishImagePlaceholder(iconSize: 64);
   }
 
   Widget _tag(String label, Color color) {

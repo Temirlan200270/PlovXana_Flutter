@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/menu_item.dart';
+import '../../../../shared/widgets/dish_image_placeholder.dart';
 import '../../../cart/data/cart_provider.dart';
 
 class MenuItemCard extends ConsumerWidget {
@@ -40,9 +41,11 @@ class MenuItemCard extends ConsumerWidget {
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
-                            errorWidget: (_, _, _) => _placeholder(),
+                            errorWidget: (_, _, _) => const DishImagePlaceholder(
+                              iconSize: 48,
+                            ),
                           )
-                        : _placeholder(),
+                        : const DishImagePlaceholder(iconSize: 48),
                   ),
                   if (item.isHalal)
                     Positioned(
@@ -115,15 +118,6 @@ class MenuItemCard extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _placeholder() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: AppColors.surfaceVariant,
-      child: const Icon(Icons.restaurant, color: AppColors.grey, size: 32),
     );
   }
 

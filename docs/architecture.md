@@ -38,7 +38,9 @@ lib/
 │   │   └── reservation.dart
 │   └── widgets/
 │       ├── main_scaffold.dart         # BottomNavigationBar + FloatingCartBar
-│       └── floating_cart_bar.dart     # Плашка корзины (Wolt-style)
+│       ├── floating_cart_bar.dart     # Плашка корзины (Wolt-style)
+│       ├── dish_image_placeholder.dart
+│       └── ikat_pattern_background.dart
 └── features/
     ├── menu/
     │   ├── data/
@@ -116,15 +118,19 @@ CheckoutScreen
 
 ## Цветовая палитра
 
+Полная спека → [design-system.md](design-system.md). Premium Uzbek → [Premium Uzbek](design-system.md#premium-uzbek--направление-айдентики).
+
 | Имя | HEX | Назначение |
 |---|---|---|
-| `primary` | `#C9A84C` | Золото — акценты, кнопки |
+| `primary` | `#C9A84C` | Золото — кнопки, цены, FloatingCartBar |
 | `background` | `#1A1A1A` | Фон приложения |
 | `surface` | `#242424` | Карточки |
-| `surfaceVariant` | `#2E2E2E` | Вложенные блоки |
+| `surfaceVariant` | `#2E2E2E` | Вложенные блоки, плейсхолдеры |
 | `cream` | `#F5EDD6` | Основной текст |
-| `halal` | `#2E5339` | Бейдж "Халяль" |
-| `spicy` | `#D4453A` | Бейдж "Острое" |
+| `halal` | `#2E5339` | Бейдж «Халяль», точка «открыто» |
+| `spicy` | `#D4453A` | Бейдж «Острое» |
+| `accentBlue` | `#1D7898` | Самаркандский лазурь — категории, икат |
+| `accentTerracotta` | `#A73C27` | Терракота (резерв) |
 | `error` | `#CF6679` | Ошибки / SnackBar |
 
 ---

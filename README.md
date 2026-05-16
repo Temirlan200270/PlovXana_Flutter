@@ -39,7 +39,11 @@ python sync.py all     # всё сразу
 
 ## Корзина (UX)
 
-На вкладках «Меню» и «Бронь» над нижней навигацией — золотая плашка **FloatingCartBar** (появляется после первого `+` в меню): количество, сумма, переход в `/cart`. Паттерн — в [docs/design-system.md](docs/design-system.md).
+На вкладках «Меню» и «Бронь» над нижней навигацией — золотая плашка **FloatingCartBar** (появляется после первого `+` в меню): количество, сумма, переход в `/cart`.
+
+## Дизайн (Premium Uzbek)
+
+Тёмный фон + золото + узбекские акценты: лазурь `accentBlue`, казан-заглушки, лёгкий икат-паттерн, арочные категории. Подробно — [docs/design-system.md](docs/design-system.md).
 
 ---
 
@@ -58,7 +62,7 @@ python sync.py all     # всё сразу
 |---|---|
 | [docs/roadmap.md](docs/roadmap.md) | Что сделано и что дальше |
 | [docs/architecture.md](docs/architecture.md) | Структура проекта, стек, навигация, провайдеры |
-| [docs/design-system.md](docs/design-system.md) | Цвета, типографика, spacing, компоненты |
+| [docs/design-system.md](docs/design-system.md) | Цвета, типографика, Premium Uzbek, компоненты |
 | [docs/features.md](docs/features.md) | Описание всех экранов |
 | [docs/data-models.md](docs/data-models.md) | Модели данных, схема БД, RLS |
 | [docs/supabase-setup.md](docs/supabase-setup.md) | Настройка Phone Auth / SMS-провайдера, CI secrets |

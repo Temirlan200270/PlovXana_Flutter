@@ -9,6 +9,7 @@ import '../widgets/menu_item_card.dart';
 import '../widgets/menu_shimmer.dart';
 import '../widgets/promo_banner.dart';
 import '../widgets/shop_status_badge.dart';
+import '../../../../shared/widgets/ikat_pattern_background.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -76,7 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
           SliverToBoxAdapter(
-            child: Padding(
+            child: IkatPatternBackground(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: TextField(
                 controller: _searchCtrl,
@@ -120,7 +121,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SliverToBoxAdapter(
               child: categoriesAsync.when(
                 data: (cats) => SizedBox(
-                  height: 120, // Увеличено со 100
+                  height: 128,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -216,7 +217,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
       loading: () => const SliverToBoxAdapter(
-          child: Center(child: CircularProgressIndicator())),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      ),
       error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }

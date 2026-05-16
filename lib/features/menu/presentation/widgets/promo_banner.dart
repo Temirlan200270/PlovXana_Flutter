@@ -12,6 +12,13 @@ class PromoBanner extends StatefulWidget {
 }
 
 class _PromoBannerState extends State<PromoBanner> {
+  static const BorderRadius _archRadius = BorderRadius.only(
+    topLeft: Radius.circular(24),
+    topRight: Radius.circular(24),
+    bottomLeft: Radius.circular(16),
+    bottomRight: Radius.circular(16),
+  );
+
   final _controller = PageController();
   int _page = 0;
 
@@ -36,7 +43,7 @@ class _PromoBannerState extends State<PromoBanner> {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: _archRadius,
                   child: p.imageUrl != null
                       ? CachedNetworkImage(
                           imageUrl: p.imageUrl!,
@@ -75,9 +82,24 @@ class _PromoBannerState extends State<PromoBanner> {
 
   Widget _fallback(Promotion p) {
     return Container(
-      color: AppColors.surfaceVariant,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        border: Border(
+          left: BorderSide(
+            color: AppColors.accentBlue.withValues(alpha: 0.8),
+            width: 3,
+          ),
+        ),
+      ),
       child: Center(
-        child: Text(p.title, style: const TextStyle(color: AppColors.cream, fontSize: 18)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            p.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.cream, fontSize: 18),
+          ),
+        ),
       ),
     );
   }

@@ -39,7 +39,9 @@ class CategoryScreen extends ConsumerWidget {
                 itemCount: items.length,
                 itemBuilder: (_, i) => MenuItemCard(item: items[i]),
               ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
         error: (e, _) => Center(
           child: Text('Ошибка: $e', style: const TextStyle(color: AppColors.error)),
         ),

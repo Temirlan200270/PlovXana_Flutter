@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/dish_image_placeholder.dart';
+import '../../../shared/widgets/ikat_pattern_background.dart';
 import '../data/cart_provider.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -25,19 +27,24 @@ class CartScreen extends ConsumerWidget {
         ],
       ),
       body: cart.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.shopping_bag_outlined, size: 64, color: AppColors.grey),
-                  const SizedBox(height: 16),
-                  const Text('Корзина пуста', style: TextStyle(color: AppColors.greyLight, fontSize: 18)),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => context.go('/'),
-                    child: const Text('Перейти в меню'),
-                  ),
-                ],
+          ? IkatPatternBackground(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const DishImagePlaceholder(width: 96, height: 96, iconSize: 48),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Корзина пуста',
+                      style: TextStyle(color: AppColors.greyLight, fontSize: 18),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => context.go('/'),
+                      child: const Text('Перейти в меню'),
+                    ),
+                  ],
+                ),
               ),
             )
           : ListView.separated(
@@ -120,11 +127,7 @@ class CartScreen extends ConsumerWidget {
   }
 
   Widget _imgPlaceholder() {
-    return Container(
-        width: 88,
-        height: 88,
-        color: AppColors.surfaceVariant,
-        child: const Icon(Icons.restaurant, color: AppColors.grey));
+    return const DishImagePlaceholder(width: 88, height: 88, iconSize: 32);
   }
 
   String _fmt(int price) {

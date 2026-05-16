@@ -4,9 +4,85 @@
 
 ## Дизайн-философия
 
-**Premium Eastern.** Тёмная база (как ночной ресторан), золото-акцент (как лампы и медь), кремовая типографика (как тёплый свет на скатерти).
+**Premium Uzbek** — текущий образ (v1 внедрён). База: тёмный фон + золото + кремовый текст.
 
-Это **не Material Design** в чистом виде. Не **Cupertino**. Это собственный язык, заточенный под узбекскую кухню в дорогом сегменте.
+Тёмный фон (ночной ресторан), золото-акцент (лампы, медь), кремовая типографика (тёплый свет на скатерти) — это уже работает и даёт ощущение «дорого». Но без узбекских маркеров интерфейс без логотипа похож на стейк-хаус, суши-бар или кальянную: есть премиальность, **нет узбекской души**.
+
+**Правило эволюции:** усиливать айдентику **поверх** существующей системы. Не «колхоз» и не пёстрая чайхана — элегантные этнические акценты, а не перерисовка всего UI.
+
+Это **не Material Design** в чистом виде. Не **Cupertino**. Собственный язык под узбекскую кухню в дорогом сегменте.
+
+---
+
+## Premium Uzbek — направление айдентики
+
+Четыре рычага поверх тёмно-золотой базы. **Внедрено** (см. таблицу статуса ниже).
+
+### 1. Этнические цвета ✅
+
+| Token | HEX | Где используется |
+|---|---|---|
+| `accentBlue` / `samarkandBlue` | `#1D7898` | Рамка `CategoryChip`, `IkatPatternBackground`, полоска fallback в `PromoBanner` |
+| `accentTerracotta` / `tandoor` | `#A73C27` | Резерв (пока не в UI; `spicy` для «Острое») |
+
+**Правило:** `background`, `cream`, `primary` и **FloatingCartBar** не перекрашивать в лазурь/терракоту.
+
+### 2. Плейсхолдеры фото ✅
+
+Виджет [`DishImagePlaceholder`](../lib/shared/widgets/dish_image_placeholder.dart):
+
+- Иконка: `Icons.soup_kitchen_rounded` (казан), цвет `AppColors.divider`
+- Фон: `AppColors.surfaceVariant`
+
+**Подключено:** `MenuItemCard`, `ItemDetailScreen`, миниатюры и пустая корзина в `CartScreen`.
+
+**Категории:** иконки по названию (`CategoryChip.iconForCategory`) — `rice_bowl`, `soup_kitchen_rounded` и т.д.
+
+**Позже (опционально):** SVG казана в `assets/images/placeholders/`.
+
+### 3. Паттерн икат ✅
+
+Виджет [`IkatPatternBackground`](../lib/shared/widgets/ikat_pattern_background.dart) — `CustomPainter`, ромбы, `accentBlue` @ **4%** opacity.
+
+**Подключено:** блок поиска на `HomeScreen`, пустое состояние `CartScreen`.
+
+**Не использовать** под плотным текстом форм. Один стиль паттерна на весь проект.
+
+### 4. Мягкие арки ✅
+
+| Компонент | Радиусы (верх / низ) |
+|---|---|
+| `CategoryChip` | 24 / 16, контейнер 80×80 |
+| `PromoBanner` | 24 / 16 |
+| `MenuItemCard` | 16 равномерно (контент-карточка) |
+
+**Не делать:** арки на каждой кнопке; не выходить за spacing scale 4/8/12…
+
+### Типографика логотипа
+
+| Зона | Шрифт | Комментарий |
+|---|---|---|
+| Меню, формы, цены | **Inter** | Читаемость — приоритет |
+| «ПЛОВ НОМЕР 1» в AppBar | Playfair Display (сейчас) или восточный display-шрифт | Только заголовок бренда; лёгкая вязь — опционально, A/B с Playfair |
+| Body / описания блюд | Inter | Без декоративных шрифтов |
+
+### Лоадеры
+
+`CircularProgressIndicator` — цвет `AppColors.primary` (золото). Опционально: кастомный индикатор «солнце» / орнамент — только на splash и full-screen loading, не на каждой кнопке.
+
+---
+
+## 🛠 Premium Uzbek — статус внедрения
+
+| Шаг | Статус | Где в коде |
+|---|---|---|
+| `accentBlue`, `accentTerracotta` | ✅ | `app_colors.dart` |
+| Плейсхолдер казан | ✅ | `DishImagePlaceholder` → карточки, корзина, деталь |
+| Паттерн икат (~4% opacity) | ✅ | `IkatPatternBackground` → поиск, пустая корзина |
+| Арки 24/16 | ✅ | `CategoryChip`, `PromoBanner` |
+| Display-шрифт заголовка | ⏳ | Playfair в AppBar — опционально позже |
+
+Виджеты: [`dish_image_placeholder.dart`](../lib/shared/widgets/dish_image_placeholder.dart), [`ikat_pattern_background.dart`](../lib/shared/widgets/ikat_pattern_background.dart).
 
 ---
 
@@ -22,6 +98,8 @@
 | `cream` | `#F5EDD6` | Основной текст. Заголовки, body. |
 | `halal` | `#2E5339` | Бейдж "Халяль". Тёмно-зелёный — отличается от любого другого UI. |
 | `spicy` | `#D4453A` | Бейдж "Острое". Используется только тут, не как error. |
+| `accentBlue` | `#1D7898` | Самаркандский лазурь. Рамка категорий, паттерн, акценты промо. |
+| `accentTerracotta` | `#A73C27` | Терракота. Резерв для тёплых акцентов. |
 
 ### Surface
 
@@ -221,18 +299,39 @@ TextField(
 
 **Не использовать** круглый FAB для корзины — перекрывает карточки меню.
 
+### `DishImagePlaceholder`
+
+```dart
+const DishImagePlaceholder(iconSize: 48); // width/height опционально
+```
+
+Единая заглушка фото блюда. Не дублировать `Icons.restaurant` в фичах.
+
 ### Карточка блюда (`MenuItemCard`)
 
-- Фото: `Expanded(flex: 3)`, плейсхолдер `Icons.restaurant`
+- Фото: `Expanded(flex: 3)`, без фото → `DishImagePlaceholder`
 - Текстовый блок: `ConstrainedBox(minHeight: 80)` — название, вес, цена
 - Пустая корзина: круглая кнопка `+` (`AppColors.surfaceVariant`)
 - В корзине: компактный stepper `[ − qty + ]` на `AppColors.primary`, текст `AppColors.background`
 - Tap по карточке → деталь; tap по stepper не открывает деталь (`HitTestBehavior.opaque`)
 
+### `IkatPatternBackground`
+
+```dart
+IkatPatternBackground(
+  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+  child: TextField(...),
+)
+```
+
+Декоративный слой под контентом. Не вкладывать внутрь `TextField` — оборачивать блок.
+
 ### Категория (`CategoryChip`)
 
-- Ширина чипа: **96**, иконка 64×64
-- Название: `maxLines: 2`, `TextOverflow.ellipsis`, `textAlign: center`
+- Ширина **96**, иконка **80×80**, арка `24` сверху / `16` снизу
+- Рамка: `accentBlue` @ 35% opacity; иконка `primary`
+- Название: `maxLines: 2`, `ellipsis`, `height: 1.2`
+- Иконка: `CategoryChip.iconForCategory(name)` — статический хелпер
 
 ### Статус ресторана (`ShopStatusBadge`)
 
@@ -378,3 +477,5 @@ Scaffold(
 6. ❌ Skeumorphism (3D, градиенты с тенями) — мы flat + золото-акцент
 7. ❌ Light theme — у нас только dark
 8. ❌ Гифки, лоттие-анимации — только статика и нативные transitions
+9. ❌ Плейсхолдеры «вилка и нож» / generic `Icons.restaurant` на блюдах — только узбекская посуда (казан, лягана, пиала)
+10. ❌ Пёстрый «чайханный» UI — этнические акценты дозированно (один доп. цвет, паттерн 3–5% opacity)

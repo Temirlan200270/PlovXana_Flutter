@@ -4,11 +4,11 @@
 
 **Маршрут:** `/`
 
-- **AppBar:** название «ПЛОВ НОМЕР 1», `ShopStatusBadge` («Сейчас открыто» / «Закрыто…»), кнопки выхода и «О ресторане»
-- **Поиск:** фильтрация блюд по названию (`searchQueryProvider` → `searchResultsProvider`)
-- **Акции:** горизонтальный `PromoBanner` из `promotions`
-- **Категории:** горизонтальный скролл `CategoryChip` (ширина 96, 2 строки текста) → `/category/:id`
-- **Популярное / Новинки:** двухрядная горизонтальная сетка `MenuItemCard`
+- **AppBar:** «ПЛОВ НОМЕР 1» (Playfair), `ShopStatusBadge`, выход и «О ресторане»
+- **Поиск:** `IkatPatternBackground` + поле; `searchQueryProvider` → `searchResultsProvider`
+- **Акции:** `PromoBanner` — арочные углы 24/16, fallback с лазурной полосой `accentBlue`
+- **Категории:** `CategoryChip` (96×80, арка, рамка `accentBlue`, иконка по типу кухни) → `/category/:id`
+- **Популярное / Новинки:** `MenuItemCard` — казан-заглушка, stepper `[ − qty + ]`
 - **Состояния:** `MenuShimmer` при загрузке, пустой поиск — «Ничего не найдено»
 
 Данные: `categoriesProvider`, `popularItemsProvider`, `newItemsProvider`, `promotionsProvider`.
@@ -30,7 +30,7 @@
 
 **Маршрут:** `/item/:id` (объект `MenuItem` в `extra`)
 
-- Hero-изображение в `SliverAppBar`
+- Hero в `SliverAppBar`; без фото — `DishImagePlaceholder` (казан)
 - Описание, вес, бейджи «Халяль» / «Острое»
 - Нижняя панель: «Добавить в корзину» или stepper с итогом за позицию
 
@@ -50,7 +50,8 @@
 - Список позиций: `+` / `−` / удалить
 - Итоговая сумма
 - «Оформить заказ» → `/checkout`
-- Пустая корзина — CTA «В меню»
+- Пустая корзина — `IkatPatternBackground`, `DishImagePlaceholder`, CTA «В меню»
+- Миниатюры без фото — `DishImagePlaceholder` 88×88
 
 **Состояние:** in-memory (`CartNotifier` / `cartProvider`), сбрасывается при перезапуске.
 
@@ -173,7 +174,7 @@ SMS-провайдер: [supabase-setup.md](supabase-setup.md).
 
 ## MainScaffold (общая оболочка)
 
-**Файлы:** `lib/shared/widgets/main_scaffold.dart`, `floating_cart_bar.dart`
+**Файлы:** `main_scaffold.dart`, `floating_cart_bar.dart`, `dish_image_placeholder.dart`, `ikat_pattern_background.dart`
 
 ### BottomNavigationBar
 

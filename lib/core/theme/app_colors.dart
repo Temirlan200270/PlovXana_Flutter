@@ -15,4 +15,14 @@ abstract class AppColors {
   static const Color error = Color(0xFFCF6679);
   static const Color divider = Color(0xFF333333);
   static const Color spicy = Color(0xFFD4453A);
+
+  /// Самаркандский лазурь — тонкие этнические акценты.
+  static const Color accentBlue = Color(0xFF1D7898);
+
+  /// Терракота тандыра / специй.
+  static const Color accentTerracotta = Color(0xFFA73C27);
+
+  /// Алиасы для документации Premium Uzbek.
+  static const Color samarkandBlue = accentBlue;
+  static const Color tandoor = accentTerracotta;
 }

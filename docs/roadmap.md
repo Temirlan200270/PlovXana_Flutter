@@ -14,6 +14,7 @@
 - [x] Документация: architecture, features, data-models, design-system, supabase-setup, iiko-sync
 - [x] `menu_sync.py`: сохранение ручных `image_url` при пустом iiko
 - [x] UI MVP: `FloatingCartBar`, stepper в `MenuItemCard`, правки категорий/статуса/брони
+- [x] Premium Uzbek v1: `accentBlue`/`accentTerracotta`, `DishImagePlaceholder`, `IkatPatternBackground`, арки на категориях и промо
 
 ---
 
@@ -29,6 +30,16 @@
 - [ ] `flutter build apk --release` → установить APK, проверить вживую
 - [ ] Исправить баги после ручного тестирования
 - [ ] Добавить GitHub Secrets для CI — см. [iiko-sync.md](iiko-sync.md#secrets-обязательно) и [supabase-setup.md](supabase-setup.md#github-actions-cicd)
+
+---
+
+## Phase 1.5 — Premium Uzbek (доработки)
+
+> Базовая айдентика внедрена. Спека → [design-system.md](design-system.md#premium-uzbek--направление-айдентики)
+
+- [ ] SVG-плейсхолдер казана в `assets/` (вместо Material-иконки)
+- [ ] (Опционально) Display-шрифт с восточной вязью для «ПЛОВ НОМЕР 1»
+- [ ] (Опционально) Расширить `IkatPatternBackground` на splash / hero-блоки
 
 ---
 
