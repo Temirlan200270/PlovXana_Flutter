@@ -9,20 +9,16 @@ abstract class AppColors {
   static const Color onBackground = Color(0xFFF5EDD6);
   static const Color onSurface = Color(0xFFF5EDD6);
   static const Color halal = Color(0xFF2E5339);
+  static const Color statusOpen = Color(0xFF52C45A);
   static const Color cream = Color(0xFFF5EDD6);
   static const Color grey = Color(0xFF6B6B6B);
   static const Color greyLight = Color(0xFF9E9E9E);
   static const Color error = Color(0xFFCF6679);
   static const Color divider = Color(0xFF333333);
-  static const Color spicy = Color(0xFFD4453A);
 
   /// Самаркандский лазурь — тонкие этнические акценты.
   static const Color accentBlue = Color(0xFF1D7898);
 
-  /// Терракота тандыра / специй.
+  /// Терракота тандыра / специй — бейдж «Острое», тёплые акценты.
   static const Color accentTerracotta = Color(0xFFA73C27);
-
-  /// Алиасы для документации Premium Uzbek.
-  static const Color samarkandBlue = accentBlue;
-  static const Color tandoor = accentTerracotta;
 }

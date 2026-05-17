@@ -68,7 +68,7 @@ class PlovXanaApp extends ConsumerWidget {
 
     return NotificationBootstrap(
       child: MaterialApp.router(
-      title: 'ПЛОВ НОМЕР 1',
+      title: 'PlovХана',
       theme: AppTheme.dark,
       locale: locale,
       supportedLocales: AppLocalizations.supportedLocales,

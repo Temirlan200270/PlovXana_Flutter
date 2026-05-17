@@ -14,34 +14,37 @@ class ShopStatusBadge extends StatelessWidget {
 
     final dotColor = closingSoon
         ? AppColors.primary
-        : (open ? AppColors.halal : AppColors.error);
-
-    final textColor = closingSoon
-        ? AppColors.primary
-        : (open ? AppColors.greyLight : AppColors.error);
+        : (open ? AppColors.statusOpen : AppColors.error);
 
     final text = closingSoon
         ? l10n.shopStatusClosingSoon()
         : (open ? l10n.shopStatusOpen() : l10n.shopStatusClosed());
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: dotColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
-        ),
-      ],
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              color: dotColor,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

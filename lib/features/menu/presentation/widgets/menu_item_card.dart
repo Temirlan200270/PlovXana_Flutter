@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/l10n/delivery_l10n.dart';
 import '../../../../shared/models/menu_item.dart';
 import '../../../../shared/widgets/dish_image_placeholder.dart';
 import '../../../cart/data/cart_provider.dart';
@@ -25,6 +26,10 @@ class MenuItemCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: 0.25),
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,13 +56,13 @@ class MenuItemCard extends ConsumerWidget {
                     Positioned(
                       top: 8,
                       left: 8,
-                      child: _badge('Халяль', AppColors.halal),
+                      child: _badge(context.l10n.halal, AppColors.halal),
                     ),
                   if (item.isSpicy)
                     Positioned(
                       top: 8,
                       right: 8,
-                      child: _badge('Острое', AppColors.spicy),
+                      child: _badge(context.l10n.spicy, AppColors.accentTerracotta),
                     ),
                 ],
               ),
@@ -123,12 +128,24 @@ class MenuItemCard extends ConsumerWidget {
 
   Widget _badge(String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.9),
+        color: color,
         borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: AppColors.cream.withValues(alpha: 0.15),
+          width: 0.5,
+        ),
       ),
-      child: Text(text, style: const TextStyle(color: AppColors.cream, fontSize: 10)),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: AppColors.cream,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.2,
+        ),
+      ),
     );
   }
 

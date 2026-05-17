@@ -85,7 +85,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                       if (widget.item.isHalal) _tag(l10n.halal, AppColors.halal),
                       if (widget.item.isSpicy) ...[
                         const SizedBox(width: 8),
-                        _tag('${l10n.spicy} 🌶', AppColors.spicy),
+                        _tag('${l10n.spicy} 🌶', AppColors.accentTerracotta),
                       ],
                     ],
                   ),

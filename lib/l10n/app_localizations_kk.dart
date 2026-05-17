@@ -9,7 +9,7 @@ class AppLocalizationsKk extends AppLocalizations {
   AppLocalizationsKk([String locale = 'kk']) : super(locale);
 
   @override
-  String get appTitle => 'ПЛОВ НОМЕР 1';
+  String get appTitle => 'PlovХана';
 
   @override
   String get navMenu => 'Мәзір';
@@ -57,7 +57,7 @@ class AppLocalizationsKk extends AppLocalizations {
   String get logout => 'Шығу';
 
   @override
-  String get aboutRestaurant => 'ПЛОВ НОМЕР 1';
+  String get aboutRestaurant => 'PlovХана';
 
   @override
   String get aboutAddress =>

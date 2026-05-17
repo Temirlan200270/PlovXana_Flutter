@@ -29,7 +29,12 @@ class CategoryChip extends StatelessWidget {
     if (n.contains('напит')) return Icons.local_cafe;
     if (n.contains('десерт')) return Icons.cake;
     if (n.contains('мясо') || n.contains('птиц')) return Icons.set_meal;
-    return Icons.soup_kitchen_rounded;
+    if (n.contains('суши') || n.contains('роллы') || n.contains('ролл')) return Icons.set_meal;
+    if (n.contains('соус')) return Icons.water_drop_outlined;
+    if (n.contains('гриль') || n.contains('барбекю')) return Icons.outdoor_grill;
+    if (n.contains('пицц')) return Icons.local_pizza;
+    if (n.contains('традиц') || n.contains('узбек')) return Icons.soup_kitchen_rounded;
+    return Icons.restaurant_menu;
   }
 
   @override

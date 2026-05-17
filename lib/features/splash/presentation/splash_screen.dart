@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/l10n/delivery_l10n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../features/menu/data/menu_providers.dart';
+import '../../../shared/models/category.dart';
+import '../../../shared/models/menu_item.dart';
 import '../../../shared/widgets/ikat_pattern_background.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fade;
@@ -29,7 +33,12 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
     _controller.forward();
-    Future<void>.delayed(const Duration(milliseconds: 2000), _goHome);
+
+    Future.wait([
+      Future<void>.delayed(const Duration(milliseconds: 1400)),
+      ref.read(categoriesProvider.future).catchError((_) => <Category>[]),
+      ref.read(popularItemsProvider.future).catchError((_) => <MenuItem>[]),
+    ]).then((_) => _goHome());
   }
 
   void _goHome() {

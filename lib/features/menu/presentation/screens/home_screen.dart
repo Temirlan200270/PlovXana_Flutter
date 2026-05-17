@@ -10,8 +10,8 @@ import '../widgets/menu_shimmer.dart';
 import '../widgets/promo_banner.dart';
 import '../widgets/shop_status_badge.dart';
 import '../../../../shared/widgets/delivery_info_banner.dart';
-import '../../../../shared/widgets/delivery_info_sheet.dart';
 import '../../../../shared/widgets/ikat_pattern_background.dart';
+import '../../../../shared/widgets/ornamental_divider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/l10n/delivery_l10n.dart';
@@ -25,10 +25,22 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _searchCtrl = TextEditingController();
+  final _scrollCtrl = ScrollController();
+  bool _scrolled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(() {
+      final scrolled = _scrollCtrl.offset > 0;
+      if (scrolled != _scrolled) setState(() => _scrolled = scrolled);
+    });
+  }
 
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -50,11 +62,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       body: CustomScrollView(
+        controller: _scrollCtrl,
         slivers: [
           SliverAppBar(
             floating: true,
             snap: true,
             expandedHeight: 72,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(0.5),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 0.5,
+                color: _scrolled ? AppColors.divider : Colors.transparent,
+              ),
+            ),
             title: Row(
               children: [
                 Expanded(
@@ -72,14 +93,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.local_shipping_outlined, color: AppColors.cream),
-                onPressed: () => showDeliveryInfoSheet(context),
-              ),
-              IconButton(
-                icon: const Icon(Icons.logout, color: AppColors.error, size: 20),
-                onPressed: () => _showLogoutConfirm(context),
-              ),
               IconButton(
                 icon: const Icon(Icons.info_outline, color: AppColors.cream),
                 onPressed: () => _showInfo(context),
@@ -168,11 +181,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        child: _sectionTitle(title),
       ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 20,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        const SizedBox(width: 12),
+        const Expanded(child: OrnamentalDivider()),
+      ],
     );
   }
 
@@ -185,7 +214,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+                child: _sectionTitle(title),
               ),
             ),
             SliverToBoxAdapter(
@@ -247,41 +276,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
       error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-    );
-  }
-
-  void _showLogoutConfirm(BuildContext context) {
-    final l10n = context.l10n;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text(l10n.logoutTitle, style: const TextStyle(color: AppColors.cream)),
-        content: Text(
-          l10n.logoutMessage,
-          style: const TextStyle(color: AppColors.greyLight),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              final nav = Navigator.of(ctx);
-              final sm = ScaffoldMessenger.of(context);
-              await ref.read(signOutProvider)();
-              if (mounted) {
-                nav.pop();
-                sm.showSnackBar(
-                  SnackBar(content: Text(l10n.logoutSuccess)),
-                );
-              }
-            },
-            child: Text(l10n.logout, style: const TextStyle(color: AppColors.error)),
-          ),
-        ],
-      ),
     );
   }
 

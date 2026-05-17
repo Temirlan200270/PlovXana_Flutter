@@ -22,5 +22,5 @@ abstract class AppConfig {
   static String get whatsappUrl => 'https://wa.me/$whatsappNumber';
 
   static const String restaurant2GISUrl =
-      'https://2gis.kz/pavlodar/search/ТЦ Saida Plaza, пр. Назарбаева 60';
+      'https://2gis.kz/pavlodar/firm/70000001110142368';
 }

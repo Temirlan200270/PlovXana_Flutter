@@ -107,7 +107,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         : '';
 
     final message =
-        '''🍽 Новый заказ — ПЛОВ НОМЕР 1
+        '''🍽 Новый заказ — PlovХана
 
 📋 Состав:
 $lines

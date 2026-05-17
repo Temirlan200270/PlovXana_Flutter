@@ -1,6 +1,6 @@
 {
   "@@locale": "kk",
-  "appTitle": "ПЛОВ НОМЕР 1",
+  "appTitle": "PlovХана",
   "navMenu": "Мәзір",
   "navReservation": "Бронь",
   "navProfile": "Профиль",
@@ -16,7 +16,7 @@
   "logoutMessage": "Аккаунттан шығуға сенімдісіз бе?",
   "cancel": "Болдырмау",
   "logout": "Шығу",
-  "aboutRestaurant": "ПЛОВ НОМЕР 1",
+  "aboutRestaurant": "PlovХана",
   "aboutAddress": "Saida Plaza СО, Назарбаев даңғылы, 60/5, 1 қабат\n2GIS-те ашу үшін басыңыз",
   "aboutHours": "Күн сайын 11:00–24:00\nСоңғы тапсырыс: 22:45",
   "aboutPhoneBooking": "+7 777 400 77 28 — бронь",

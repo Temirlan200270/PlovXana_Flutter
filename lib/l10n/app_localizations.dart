@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In ru, this message translates to:
-  /// **'ПЛОВ НОМЕР 1'**
+  /// **'PlovХана'**
   String get appTitle;
 
   /// No description provided for @navMenu.
@@ -197,7 +197,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutRestaurant.
   ///
   /// In ru, this message translates to:
-  /// **'ПЛОВ НОМЕР 1'**
+  /// **'PlovХана'**
   String get aboutRestaurant;
 
   /// No description provided for @aboutAddress.

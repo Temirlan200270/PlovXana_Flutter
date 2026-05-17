@@ -24,9 +24,9 @@ abstract class AppTheme {
         elevation: 0,
         centerTitle: true,
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        titleTextStyle: GoogleFonts.playfairDisplay(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+        titleTextStyle: GoogleFonts.philosopher(
+          fontSize: 26,
+          fontWeight: FontWeight.bold,
           color: AppColors.cream,
           letterSpacing: 0.5,
         ),
@@ -86,23 +86,8 @@ abstract class AppTheme {
 
   static TextTheme _buildTextTheme() {
     return TextTheme(
-      displayLarge: GoogleFonts.playfairDisplay(
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-        color: AppColors.cream,
-      ),
-      displayMedium: GoogleFonts.playfairDisplay(
-        fontSize: 26,
-        fontWeight: FontWeight.bold,
-        color: AppColors.cream,
-      ),
       displaySmall: GoogleFonts.playfairDisplay(
         fontSize: 22,
-        fontWeight: FontWeight.w600,
-        color: AppColors.cream,
-      ),
-      headlineMedium: GoogleFonts.playfairDisplay(
-        fontSize: 20,
         fontWeight: FontWeight.w600,
         color: AppColors.cream,
       ),

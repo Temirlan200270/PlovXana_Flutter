@@ -1,6 +1,6 @@
 {
   "@@locale": "ru",
-  "appTitle": "ПЛОВ НОМЕР 1",
+  "appTitle": "PlovХана",
   "navMenu": "Меню",
   "navReservation": "Бронь",
   "navProfile": "Профиль",
@@ -16,7 +16,7 @@
   "logoutMessage": "Вы уверены, что хотите выйти из аккаунта?",
   "cancel": "Отмена",
   "logout": "Выйти",
-  "aboutRestaurant": "ПЛОВ НОМЕР 1",
+  "aboutRestaurant": "PlovХана",
   "aboutAddress": "ТЦ Saida Plaza, пр. Нурсултана Назарбаева, 60/5, 1 этаж\nНажмите, чтобы открыть в 2GIS",
   "aboutHours": "Ежедневно 11:00–24:00\nПоследний заказ: 22:45",
   "aboutPhoneBooking": "+7 777 400 77 28 — бронирование",
