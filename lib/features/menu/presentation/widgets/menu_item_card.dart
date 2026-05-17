@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/config/delivery_rules.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/l10n/delivery_l10n.dart';
 import '../../../../shared/models/menu_item.dart';
@@ -85,7 +86,7 @@ class MenuItemCard extends ConsumerWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       item.weightG != null ? '${item.weightG} г' : '',
                       style: const TextStyle(color: AppColors.greyLight, fontSize: 10),
@@ -97,7 +98,7 @@ class MenuItemCard extends ConsumerWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            '${_formatPrice(item.price)} тг',
+                            '${formatTenge(item.price)} тг',
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontSize: 13,
@@ -149,12 +150,7 @@ class MenuItemCard extends ConsumerWidget {
     );
   }
 
-  String _formatPrice(int price) {
-    return price.toString().replaceAllMapped(
-          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]} ',
-        );
-  }
+
 }
 
 class _CartControl extends StatelessWidget {

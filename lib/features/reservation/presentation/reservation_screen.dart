@@ -96,7 +96,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
     final timeStr = _formatTime(_selectedTime);
 
     final message =
-        '🍽 Бронирование стола — ПЛОВ НОМЕР 1\n\n'
+        '🍽 Бронирование стола — PlovХана\n\n'
         '👤 Имя: $name\n'
         '📞 Телефон: +7$phone\n'
         '📅 Дата: $dateStr\n'
@@ -104,6 +104,10 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
         '👥 Гостей: $_guests'
         '${_commentCtrl.text.trim().isNotEmpty ? '\n💬 ${_commentCtrl.text.trim()}' : ''}';
 
+    // Сохраняем данные локально в любом случае
+    await ref.read(userPrefsProvider.notifier).save(name, phone);
+
+    // Пробуем записать в БД, ошибка не блокирует отправку
     try {
       final user = Supabase.instance.client.auth.currentUser;
       await Supabase.instance.client.from('reservations').insert({
@@ -115,11 +119,8 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
         'phone': '+7$phone',
         'name': name,
       });
-      // Сохраняем данные локально после успешной брони
-      await ref.read(userPrefsProvider.notifier).save(name, phone);
     } catch (_) {
-      // Даже если в базу не записалось, сохраняем локально для удобства
-      await ref.read(userPrefsProvider.notifier).save(name, phone);
+      // БД недоступна — продолжаем, WhatsApp является основным каналом
     }
 
     final uri = Uri.parse(

@@ -13,7 +13,7 @@ import '../../cart/data/cart_provider.dart';
 
 enum DeliveryType { delivery, pickup }
 
-final _deliveryTypeProvider = StateProvider((_) => DeliveryType.delivery);
+final _deliveryTypeProvider = StateProvider.autoDispose((_) => DeliveryType.delivery);
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -95,7 +95,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return '- ${ci.item.name}$modsStr x${ci.quantity} — ${formatTenge(price)} тг';
     }).join('\n');
 
-    final deliveryLabel = isDelivery ? 'Доставка' : 'Самовывоз';
+    final deliveryLabel = isDelivery ? l10n.checkoutDelivery : l10n.checkoutPickup;
     final deliveryFeeLine = isDelivery
         ? '\n🚚 Доставка: ${context.l10n.deliveryFeeShortLabel(subtotal, isDelivery: true)}'
         : '';
@@ -116,24 +116,27 @@ $lines
 💰 Итого: ${formatTenge(grandTotal)} тг
 🚗 $deliveryLabel
 💵 Оплата: Наличные / Kaspi перевод$addressLine
-👤 Имя: ${name.isEmpty ? 'не указано' : name}
+👤 Имя: ${name.isEmpty ? l10n.profilePhoneMissing : name}
 📞 Телефон: +7$phone$commentLine
 
 ⏰ $now''';
 
+    // Сохраняем данные локально в любом случае
+    await ref.read(userPrefsProvider.notifier).save(name, phone);
+    if (isDelivery) await ref.read(userPrefsProvider.notifier).saveAddress(address);
+
+    // Пробуем записать в БД (для истории заказов), ошибка не блокирует заказ
     try {
       await Supabase.instance.client.from('orders').insert({
         'user_id': user.id,
         'status': 'pending',
         'items_json': cart
-            .map(
-              (ci) => {
-                'item_id': ci.item.id,
-                'name': ci.item.name,
-                'price': ci.item.price,
-                'quantity': ci.quantity,
-              },
-            )
+            .map((ci) => {
+                  'item_id': ci.item.id,
+                  'name': ci.item.name,
+                  'price': ci.item.price,
+                  'quantity': ci.quantity,
+                })
             .toList(),
         'total': grandTotal,
         'delivery_type': delivery.name,
@@ -141,12 +144,8 @@ $lines
         'phone': '+7$phone',
         'comment': _commentCtrl.text.trim(),
       });
-      // Сохраняем данные локально после успешного (или попытки) заказа
-      await ref.read(userPrefsProvider.notifier).save(name, phone);
-      if (isDelivery) await ref.read(userPrefsProvider.notifier).saveAddress(address);
     } catch (_) {
-      await ref.read(userPrefsProvider.notifier).save(name, phone);
-      if (isDelivery) await ref.read(userPrefsProvider.notifier).saveAddress(address);
+      // БД недоступна — продолжаем, WhatsApp является основным каналом заказа
     }
 
     final uri = Uri.parse(
@@ -155,6 +154,10 @@ $lines
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else if (mounted) {
+      _showError('Не удалось открыть WhatsApp');
+      setState(() => _loading = false);
+      return;
     }
 
     ref.read(cartProvider.notifier).clear();

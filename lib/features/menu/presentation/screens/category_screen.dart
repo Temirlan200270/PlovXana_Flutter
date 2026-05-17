@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/l10n/delivery_l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/menu_providers.dart';
 import '../widgets/menu_item_card.dart';
@@ -16,6 +17,7 @@ class CategoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final itemsAsync = ref.watch(menuItemsByCategoryProvider(categoryId));
 
     return Scaffold(
@@ -28,11 +30,11 @@ class CategoryScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.no_food_outlined, size: 64, color: AppColors.grey),
+                      const Icon(Icons.no_food_outlined, size: 64, color: AppColors.grey),
                       const SizedBox(height: 16),
-                      const Text(
-                        'Всё временно в стоп-листе',
-                        style: TextStyle(
+                      Text(
+                        l10n.categoryEmptyTitle,
+                        style: const TextStyle(
                           color: AppColors.cream,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -40,9 +42,9 @@ class CategoryScreen extends ConsumerWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Попробуйте другую категорию\nили загляните позже — мы пополняем меню каждый день',
-                        style: TextStyle(
+                      Text(
+                        l10n.categoryEmptySubtitle,
+                        style: const TextStyle(
                           color: AppColors.greyLight,
                           fontSize: 13,
                           height: 1.5,
@@ -68,7 +70,7 @@ class CategoryScreen extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
         error: (e, _) => Center(
-          child: Text('Ошибка: $e', style: const TextStyle(color: AppColors.error)),
+          child: Text(l10n.loadError, style: const TextStyle(color: AppColors.error)),
         ),
       ),
     );

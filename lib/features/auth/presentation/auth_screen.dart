@@ -8,9 +8,9 @@ import '../../../core/l10n/locale_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../notifications/data/fcm_service.dart';
 
-final _phoneProvider = StateProvider<String>((_) => '');
-final _otpSentProvider = StateProvider<bool>((_) => false);
-final _loadingProvider = StateProvider<bool>((_) => false);
+final _phoneProvider = StateProvider.autoDispose<String>((_) => '');
+final _otpSentProvider = StateProvider.autoDispose<bool>((_) => false);
+final _loadingProvider = StateProvider.autoDispose<bool>((_) => false);
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});

@@ -122,6 +122,8 @@
   "orderStatusPending": "Қабылданды",
   "orderStatusConfirmed": "Расталды",
   "orderStatusDone": "Орындалды",
+  "categoryEmptyTitle": "Барлығы уақытша тоқтатылды",
+  "categoryEmptySubtitle": "Басқа санатты көріңіз немесе кейінірек кіріңіз — мәзірді күн сайын толықтырамыз",
   "itemNotFound": "Тағам табылмады",
   "loadError": "Жүктеу қатесі",
   "addToCart": "Себетке қосу",

@@ -836,6 +836,18 @@ abstract class AppLocalizations {
   /// **'Выполнен'**
   String get orderStatusDone;
 
+  /// No description provided for @categoryEmptyTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Всё временно в стоп-листе'**
+  String get categoryEmptyTitle;
+
+  /// No description provided for @categoryEmptySubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Попробуйте другую категорию или загляните позже — мы пополняем меню каждый день'**
+  String get categoryEmptySubtitle;
+
   /// No description provided for @itemNotFound.
   ///
   /// In ru, this message translates to:

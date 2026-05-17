@@ -108,6 +108,7 @@ final searchQueryProvider = StateProvider<String>((ref) => '');
 
 class SearchNotifier extends AutoDisposeAsyncNotifier<List<MenuItem>> {
   Timer? _timer;
+  int _requestId = 0;
 
   @override
   Future<List<MenuItem>> build() async => [];
@@ -119,8 +120,9 @@ class SearchNotifier extends AutoDisposeAsyncNotifier<List<MenuItem>> {
       return;
     }
     _timer = Timer(const Duration(milliseconds: 300), () async {
+      final id = ++_requestId;
       state = const AsyncLoading();
-      state = await AsyncValue.guard(() async {
+      final result = await AsyncValue.guard(() async {
         final client = ref.read(supabaseProvider);
         final data = await client
             .from('menu_items')
@@ -130,6 +132,7 @@ class SearchNotifier extends AutoDisposeAsyncNotifier<List<MenuItem>> {
             .limit(20);
         return (data as List).map((e) => MenuItem.fromJson(e)).toList();
       });
+      if (id == _requestId) state = result;
     });
   }
 }

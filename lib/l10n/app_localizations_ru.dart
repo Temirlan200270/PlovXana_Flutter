@@ -421,6 +421,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get orderStatusDone => 'Выполнен';
 
   @override
+  String get categoryEmptyTitle => 'Всё временно в стоп-листе';
+
+  @override
+  String get categoryEmptySubtitle =>
+      'Попробуйте другую категорию или загляните позже — мы пополняем меню каждый день';
+
+  @override
   String get itemNotFound => 'Блюдо не найдено';
 
   @override

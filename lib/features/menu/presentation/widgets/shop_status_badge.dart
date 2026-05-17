@@ -34,7 +34,7 @@ class ShopStatusBadge extends StatelessWidget {
             height: 6,
             decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 4),
           Text(
             text,
             style: TextStyle(

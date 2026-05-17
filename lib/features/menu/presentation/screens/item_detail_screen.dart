@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/config/delivery_rules.dart';
 import '../../../../core/l10n/delivery_l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/menu_item.dart';
@@ -137,7 +138,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                       final modTotal = _modifiersTotal(groups);
                       final total = widget.item.price + modTotal;
                       return Text(
-                        '${_fmt(total)} тг',
+                        '${formatTenge(total)} тг',
                         style: const TextStyle(
                           color: AppColors.primary,
                           fontSize: 26,
@@ -146,7 +147,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                       );
                     },
                     orElse: () => Text(
-                      '${_fmt(widget.item.price)} тг',
+                      '${formatTenge(widget.item.price)} тг',
                       style: const TextStyle(
                         color: AppColors.primary,
                         fontSize: 26,
@@ -186,7 +187,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                   Expanded(
                     child: Center(
                       child: Text(
-                        '$quantity шт · ${_fmt(widget.item.price * quantity)} тг',
+                        '$quantity шт · ${formatTenge(widget.item.price * quantity)} тг',
                         style: const TextStyle(
                           color: AppColors.cream,
                           fontWeight: FontWeight.w600,
@@ -219,7 +220,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
                       Expanded(
                         child: Center(
                           child: Text(
-                            '$quantity шт · ${_fmt(widget.item.price * quantity)} тг',
+                            '$quantity шт · ${formatTenge(widget.item.price * quantity)} тг',
                             style: const TextStyle(
                               color: AppColors.cream,
                               fontWeight: FontWeight.w600,
@@ -255,9 +256,6 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen> {
     );
   }
 
-  String _fmt(int price) => price
-      .toString()
-      .replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
 }
 
 class _ModifierGroupSection extends StatelessWidget {
@@ -284,7 +282,7 @@ class _ModifierGroupSection extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.w600)),
             if (group.required) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               const Text('*',
                   style: TextStyle(
                       color: AppColors.error,
@@ -329,7 +327,7 @@ class _ModifierGroupSection extends StatelessWidget {
                               : FontWeight.normal,
                         )),
                     if (m.price > 0) ...[
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text('+${m.price} тг',
                           style: TextStyle(
                             color: isSelected

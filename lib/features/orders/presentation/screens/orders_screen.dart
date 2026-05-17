@@ -1,26 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/l10n/delivery_l10n.dart';
 import '../../../../core/l10n/locale_provider.dart';
 import '../../../../core/config/delivery_rules.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/order.dart';
-import '../../../menu/data/menu_providers.dart';
-
-final ordersProvider = FutureProvider<List<Order>>((ref) async {
-  final user = Supabase.instance.client.auth.currentUser;
-  if (user == null) return [];
-  final data = await ref
-      .read(supabaseProvider)
-      .from('orders')
-      .select()
-      .eq('user_id', user.id)
-      .order('created_at', ascending: false)
-      .limit(50);
-  return (data as List).map((e) => Order.fromJson(e)).toList();
-});
+import '../../data/orders_provider.dart';
 
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});

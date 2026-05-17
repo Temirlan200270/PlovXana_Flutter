@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "WebSearch",
       "PowerShell(claude mcp add dart-flutter --transport stdio -- dart mcp-server 2>&1)",
@@ -29,7 +28,9 @@
       "mcp__dart-flutter__analyze_files",
       "Bash",
       "Edit",
-      "Write"
-    ]
+      "Write",
+      "mcp__dart-flutter__pub"
+    ],
+    "defaultMode": "auto"
   }
 }

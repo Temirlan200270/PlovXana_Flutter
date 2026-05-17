@@ -154,7 +154,7 @@ class ProfileScreen extends ConsumerWidget {
                 Text(label,
                     style: const TextStyle(
                         color: AppColors.greyLight, fontSize: 12)),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(value,
                     style: const TextStyle(
                         color: AppColors.cream, fontSize: 15)),

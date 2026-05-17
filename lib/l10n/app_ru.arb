@@ -191,6 +191,8 @@
   "orderStatusPending": "Принят",
   "orderStatusConfirmed": "Подтверждён",
   "orderStatusDone": "Выполнен",
+  "categoryEmptyTitle": "Всё временно в стоп-листе",
+  "categoryEmptySubtitle": "Попробуйте другую категорию или загляните позже — мы пополняем меню каждый день",
   "itemNotFound": "Блюдо не найдено",
   "loadError": "Ошибка загрузки",
   "addToCart": "Добавить в корзину",

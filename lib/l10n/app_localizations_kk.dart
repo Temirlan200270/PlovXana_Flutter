@@ -419,6 +419,13 @@ class AppLocalizationsKk extends AppLocalizations {
   String get orderStatusDone => 'Орындалды';
 
   @override
+  String get categoryEmptyTitle => 'Барлығы уақытша тоқтатылды';
+
+  @override
+  String get categoryEmptySubtitle =>
+      'Басқа санатты көріңіз немесе кейінірек кіріңіз — мәзірді күн сайын толықтырамыз';
+
+  @override
   String get itemNotFound => 'Тағам табылмады';
 
   @override
